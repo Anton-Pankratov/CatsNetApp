@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -13,7 +14,12 @@ android {
         versionCode 1
         versionName "1.0"
 
+        multiDexEnabled true
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "BASE_URL", base_url
+        buildConfigField "String", "API_KEY", api_key
     }
 
     buildTypes {
@@ -34,12 +40,83 @@ android {
     }
 }
 
+ext {
+
+    /** Android API Extension */
+    coreKtx = '1.6.0'
+
+    /** APIs Support */
+    appCompat = '1.3.1'
+
+    /** Design */
+    materialDesign = '1.4.0'
+    coil = '1.3.2'
+
+    /** Coroutines */
+    coroutines = '1.4.2'
+
+    /** Lifecycle */
+    lifecycle = '2.3.1'
+    lifecycleExt = '2.2.0'
+
+    /** Dependency Injection*/
+    koin = '3.1.2'
+
+    /** Networking */
+    retrofit = '2.9.0'
+
+    /** OkHttp Client */
+    okHttp = '4.9.1'
+
+    /** Parser */
+    moshi = '1.12.0'
+
+    /** Testing */
+    junit = '4.13.2'
+    junitInstrumental = '1.1.3'
+    espresso = '3.4.0'
+}
+
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    /** Android API Extension */
+    implementation "androidx.core:core-ktx:$coreKtx"
+
+    /** APIs Support */
+    implementation "androidx.appcompat:appcompat:$appCompat"
+
+    /** Lifecycle */
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleExt"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle"
+
+    /** Coroutines */
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"
+
+    /** Design */
+    implementation "com.google.android.material:material:$materialDesign"
+    implementation "io.coil-kt:coil:$coil"
+
+    /** Dependency Injection */
+    implementation "io.insert-koin:koin-android:$koin"
+
+    /** Networking */
+    implementation "com.squareup.retrofit2:retrofit:$retrofit"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit"
+
+    /** OkHttp Client */
+    implementation "com.squareup.okhttp3:okhttp:$okHttp"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okHttp"
+
+    /** Parser */
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi"
+    implementation "com.squareup.moshi:moshi-adapters:$moshi"
+
+    /** Testing */
+    testImplementation "junit:junit:$junit"
+    androidTestImplementation "androidx.test.ext:junit:$junitInstrumental"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso"
 }
