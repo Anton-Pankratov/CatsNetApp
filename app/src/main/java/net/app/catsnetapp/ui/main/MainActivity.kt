@@ -3,6 +3,7 @@ package net.app.catsnetapp.ui.main
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import net.app.catsnetapp.databinding.ActivityMainBinding
+import net.app.catsnetapp.ui.cat.CatFragment
 import net.app.catsnetapp.ui.list.CatsAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -17,7 +18,7 @@ class MainActivity : AppCompatActivity() {
         CatsAdapter(viewModel.catsDiffCallback, viewModel.imageLoader)
             .apply {
                 setOnCatClickListener {
-
+                    CatFragment.create().show(supportFragmentManager, "cat")
                 }
             }
     }
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-
+        setCatsIntoList()
         viewModel.callTest()
     }
 
@@ -36,6 +37,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setCatsIntoList() {
-
+        catsAdapter.submitList(listOf())
     }
 }

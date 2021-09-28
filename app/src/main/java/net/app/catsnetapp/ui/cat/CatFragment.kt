@@ -1,7 +1,13 @@
 package net.app.catsnetapp.ui.cat
 
-import net.app.catsnetapp.ui.base.BaseFragment
+import androidx.fragment.app.DialogFragment
 
-class CatFragment : BaseFragment() {
+class CatFragment : DialogFragment() {
 
+
+    companion object {
+        fun create(): CatFragment {
+            return CatFragment()
+        }
+    }
 }

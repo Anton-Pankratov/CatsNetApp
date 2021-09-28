@@ -3,7 +3,7 @@ package net.app.catsnetapp.models
 data class Cat(
     val id: String?,
     val url: String?,
-    val breeds: List<Any?>,
+    val breeds: List<Breed?>,
     val width: Int?,
     val height: Int?
 )
