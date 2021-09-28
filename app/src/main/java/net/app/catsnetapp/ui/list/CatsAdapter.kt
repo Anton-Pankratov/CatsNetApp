@@ -2,16 +2,23 @@ package net.app.catsnetapp.ui.list
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
+import coil.ImageLoader
 import net.app.catsnetapp.models.Cat
 
-class CatsAdapter(diffCallback: CatsDiffCallback) :
+class CatsAdapter(diffCallback: CatsDiffCallback, private val imageLoader: ImageLoader) :
     ListAdapter<Cat, CatViewHolder>(diffCallback) {
 
+    private var onCatClickListener: OnCatItemViewClickListener? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatViewHolder {
-        TODO("Not yet implemented")
+        return CatViewHolder.create(parent.context)
     }
 
     override fun onBindViewHolder(holder: CatViewHolder, position: Int) {
-        TODO("Not yet implemented")
+        holder.onBind(getItem(position), onCatClickListener, imageLoader)
+    }
+
+    fun setOnCatClickListener(listener: OnCatItemViewClickListener) {
+        onCatClickListener = listener
     }
 }

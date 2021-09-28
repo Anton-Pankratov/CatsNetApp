@@ -37,5 +37,5 @@ val appModule = module {
     viewModel { MainViewModel(get()) }
 
     single { CatsDiffCallback() }
-    factory { Coil.imageLoader(get()) }
+    factory(named("ImageLoader")) { Coil.imageLoader(get()) }
 }

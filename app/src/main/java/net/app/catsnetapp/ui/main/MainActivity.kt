@@ -14,7 +14,12 @@ class MainActivity : AppCompatActivity() {
     private val binding get() = _binding
 
     private val catsAdapter: CatsAdapter by lazy {
-        CatsAdapter(viewModel.catsDiffCallback)
+        CatsAdapter(viewModel.catsDiffCallback, viewModel.imageLoader)
+            .apply {
+                setOnCatClickListener {
+
+                }
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
