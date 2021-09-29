@@ -8,12 +8,11 @@ import net.app.catsnetapp.BuildConfig
 import net.app.catsnetapp.network.CatsOkHttpClient
 import net.app.catsnetapp.network.CatsRetrofitService
 import net.app.catsnetapp.repository.CatsNetRepository
-import net.app.catsnetapp.ui.list.CatsAdapter
+import net.app.catsnetapp.repository.ErrorsHandler
 import net.app.catsnetapp.ui.list.CatsDiffCallback
 import net.app.catsnetapp.ui.main.MainViewModel
 import net.app.catsnetapp.utils.API_KEY
 import net.app.catsnetapp.utils.BASE_URL
-import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -29,6 +28,7 @@ val appModule = module {
     single { Moshi.Builder().add(KotlinJsonAdapterFactory()).build() }
     factory { CatsOkHttpClient(get(named(API_KEY))).build() }
     factory { CatsRetrofitService(get(named(BASE_URL)), get(), get()).build() }
+    single { ErrorsHandler }
 
     // Repository
     factory { CatsNetRepository(get()) }

@@ -3,21 +3,23 @@ package net.app.catsnetapp.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.app.catsnetapp.models.Cat
-import net.app.catsnetapp.models.requests.ImagesRequest
 import net.app.catsnetapp.network.ApiResponse
 import net.app.catsnetapp.network.CatsApiService
-import net.app.catsnetapp.network.Failure
 import net.app.catsnetapp.network.Success
-import net.app.catsnetapp.utils.DEFAULT_ERROR_MESSAGE
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import retrofit2.Response
 
-class CatsNetRepository(private val apiService: CatsApiService) {
+class CatsNetRepository(private val apiService: CatsApiService) : KoinComponent {
 
-    suspend fun fetchCatsImages(request: ImagesRequest): ApiResponse<List<Cat>, String> {
+    private val errorsHandler: ErrorsHandler by inject()
+
+    suspend fun fetchCatsImages(): ApiResponse<List<Cat>?, String?> {
         return withContext(Dispatchers.IO) {
             try {
-                Success(apiService.fetchCatsImages(request))
+                Success(apiService.fetchCatsImages(10).body())
             } catch (e: Exception) {
-                Failure(e.message ?: DEFAULT_ERROR_MESSAGE)
+                errorsHandler.handle(e)
             }
         }
     }

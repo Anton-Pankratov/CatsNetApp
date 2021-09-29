@@ -5,7 +5,13 @@ import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import net.app.catsnetapp.models.Cat
+import net.app.catsnetapp.models.requests.ImagesRequest
+import net.app.catsnetapp.network.Failure
+import net.app.catsnetapp.network.Success
 import net.app.catsnetapp.repository.CatsNetRepository
 import net.app.catsnetapp.ui.list.CatsDiffCallback
 import org.koin.core.component.KoinComponent
@@ -22,10 +28,25 @@ class MainViewModel(private val repository: CatsNetRepository) : ViewModel(), Ko
     val catsDiffCallback: CatsDiffCallback by inject()
     val imageLoader: ImageLoader by inject(named("ImageLoader"))
 
-    fun callTest() {
-        viewModelScope.launch {
-            repository.fetchCatsImages()
-        }
+    private val _cats = MutableStateFlow<List<Cat>>(emptyList())
+    val cats: StateFlow<List<Cat>> = _cats
+
+    init {
+        fetchCatsImages()
     }
 
+    private fun fetchCatsImages() {
+        viewModelScope.launch {
+            repository.fetchCatsImages().apply {
+                when (this) {
+                    is Success -> {
+                        data?.let { _cats.tryEmit(it) }
+                    }
+                    is Failure -> {
+
+                    }
+                }
+            }
+        }
+    }
 }

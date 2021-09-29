@@ -2,6 +2,10 @@ package net.app.catsnetapp.ui.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.ActivityMainBinding
 import net.app.catsnetapp.ui.cat.CatFragment
 import net.app.catsnetapp.ui.list.CatsAdapter
@@ -27,8 +31,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-        setCatsIntoList()
-        viewModel.callTest()
+        configureCatsRecyclerView()
+        collectCats()
     }
 
     override fun onDestroy() {
@@ -36,7 +40,18 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun setCatsIntoList() {
-        catsAdapter.submitList(listOf())
+    private fun configureCatsRecyclerView() {
+        binding?.root?.apply {
+            layoutManager = GridLayoutManager(this@MainActivity, 3)
+            adapter = catsAdapter
+        }
+    }
+
+    private fun collectCats() {
+        lifecycleScope.launch {
+            viewModel.cats.collect {
+                catsAdapter.submitList(it)
+            }
+        }
     }
 }
