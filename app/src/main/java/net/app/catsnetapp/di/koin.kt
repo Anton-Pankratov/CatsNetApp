@@ -20,7 +20,7 @@ import org.koin.dsl.module
 
 val appModule = module {
 
-    single { get<Context>() }
+    single(named("context")) { get<Context>() }
 
     single(named(BASE_URL)) { BuildConfig.BASE_URL }
     single(named(API_KEY)) { BuildConfig.API_KEY }
@@ -37,5 +37,5 @@ val appModule = module {
     viewModel { MainViewModel(get()) }
 
     single { CatsDiffCallback() }
-    factory(named("ImageLoader")) { Coil.imageLoader(get()) }
+    factory(named("ImageLoader")) { Coil.imageLoader(get(named("context"))) }
 }

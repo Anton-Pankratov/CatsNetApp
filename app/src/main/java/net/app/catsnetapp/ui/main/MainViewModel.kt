@@ -24,7 +24,7 @@ class MainViewModel(private val repository: CatsNetRepository) : ViewModel(), Ko
 
     fun callTest() {
         viewModelScope.launch {
-         //   repository.fetchCatsImages()
+            repository.fetchCatsImages()
         }
     }
 
