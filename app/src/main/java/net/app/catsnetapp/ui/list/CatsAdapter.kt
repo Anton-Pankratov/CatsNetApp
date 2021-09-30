@@ -4,9 +4,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import coil.ImageLoader
 import net.app.catsnetapp.models.Cat
+import net.app.catsnetapp.ui.main.MainViewModel
 
-class CatsAdapter(diffCallback: CatsDiffCallback, private val imageLoader: ImageLoader) :
-    ListAdapter<Cat, CatViewHolder>(diffCallback) {
+class CatsAdapter(private val viewModel: MainViewModel) :
+    ListAdapter<Cat, CatViewHolder>(viewModel.catsDiffCallback) {
 
     private var onCatClickListener: OnCatItemViewClickListener? = null
 
@@ -15,7 +16,7 @@ class CatsAdapter(diffCallback: CatsDiffCallback, private val imageLoader: Image
     }
 
     override fun onBindViewHolder(holder: CatViewHolder, position: Int) {
-        holder.onBind(getItem(position), onCatClickListener, imageLoader)
+        holder.onBind(getItem(position), onCatClickListener, viewModel)
     }
 
     fun setOnCatClickListener(listener: OnCatItemViewClickListener) {

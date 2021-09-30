@@ -19,12 +19,11 @@ class MainActivity : AppCompatActivity() {
     private val binding get() = _binding
 
     private val catsAdapter: CatsAdapter by lazy {
-        CatsAdapter(viewModel.catsDiffCallback, viewModel.imageLoader)
-            .apply {
-                setOnCatClickListener {
-                    CatFragment.create().show(supportFragmentManager, "cat")
-                }
+        CatsAdapter(viewModel).apply {
+            setOnCatClickListener {
+                CatFragment.create().show(supportFragmentManager, "cat")
             }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
