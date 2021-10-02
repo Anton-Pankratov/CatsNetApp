@@ -4,7 +4,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import coil.ImageLoader
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.app.catsnetapp.models.Cat
 
 class CatsAdapter(
@@ -20,9 +19,7 @@ class CatsAdapter(
     }
 
     override fun onBindViewHolder(holder: CatViewHolder, position: Int) {
-        coroutineScope.launch {
-            holder.onBind(getItem(position), onCatClickListener, imageLoader)
-        }
+        holder.onBind(getItem(position), onCatClickListener, imageLoader)
     }
 
     fun setOnCatClickListener(listener: OnCatItemViewClickListener) {

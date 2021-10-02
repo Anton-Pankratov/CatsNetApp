@@ -15,6 +15,7 @@ import net.app.catsnetapp.models.requests.ImagesRequest
 import net.app.catsnetapp.network.Failure
 import net.app.catsnetapp.network.Success
 import net.app.catsnetapp.repository.CatsNetRepository
+import net.app.catsnetapp.ui.base.BaseViewModel
 import net.app.catsnetapp.ui.list.CatsDiffCallback
 import net.app.catsnetapp.utils.DI_COIL_IMAGE_LOADER
 import net.app.catsnetapp.utils.DI_COIL_IMAGE_REQUEST
@@ -23,16 +24,12 @@ import org.koin.core.component.inject
 import org.koin.core.qualifier.named
 import kotlin.coroutines.CoroutineContext
 
-class MainViewModel(private val repository: CatsNetRepository) : ViewModel(), KoinComponent,
-    CoroutineScope {
+class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel(), CoroutineScope {
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO
 
     val catsDiffCallback: CatsDiffCallback by inject()
-
-    val imageLoader: ImageLoader by inject(named(DI_COIL_IMAGE_LOADER))
-    val imageRequest: ImageRequest by inject(named(DI_COIL_IMAGE_REQUEST))
 
     private val _cats = MutableStateFlow<List<Cat>>(emptyList())
     val cats: StateFlow<List<Cat>> = _cats

@@ -8,9 +8,14 @@ import coil.ImageLoader
 import coil.load
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.utils.toDp
 import org.koin.core.component.KoinComponent
+import kotlin.coroutines.coroutineContext
 
 const val IMAGE_SIZE = 140
 const val IMAGE_MARGIN = 8
@@ -22,7 +27,7 @@ class CatViewHolder(private val catView: AppCompatImageView) :
     var cat: Cat? = null
         private set
 
-    suspend fun onBind(
+    fun onBind(
         cat: Cat, listener: OnCatItemViewClickListener?,
         imageLoader: ImageLoader
     ) {
@@ -30,7 +35,7 @@ class CatViewHolder(private val catView: AppCompatImageView) :
         catView.setCatImage(listener, imageLoader)
     }
 
-    private suspend fun ImageView.setCatImage(
+    private fun ImageView.setCatImage(
         listener: OnCatItemViewClickListener?,
         imageLoader: ImageLoader
     ) {
@@ -42,10 +47,13 @@ class CatViewHolder(private val catView: AppCompatImageView) :
         }.build()
 
         imageLoader.enqueue(request)
-        imageLoader.execute(request).drawable
 
         setOnClickListener {
-            cat?.let { listener?.onClick(it) }
+            CoroutineScope(Dispatchers.IO).launch {
+                cat?.let {
+                    listener?.onClick(it.url)
+                }
+            }
         }
     }
 

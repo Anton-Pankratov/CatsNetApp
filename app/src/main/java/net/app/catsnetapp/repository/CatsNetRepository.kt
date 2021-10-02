@@ -17,7 +17,7 @@ class CatsNetRepository(private val apiService: CatsApiService) : KoinComponent 
     suspend fun fetchCatsImages(): ApiResponse<List<Cat>?, String?> {
         return withContext(Dispatchers.IO) {
             try {
-                Success(apiService.fetchCatsImages(10).body())
+                Success(apiService.fetchCatsImages("full", 10).body())
             } catch (e: Exception) {
                 errorsHandler.handle(e)
             }

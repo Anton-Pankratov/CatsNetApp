@@ -9,6 +9,7 @@ interface CatsApiService {
 
     @GET("images/search")
     suspend fun fetchCatsImages(
+        @Query("size") size: String,
         @Query("limit") limit: Int,
     ): Response<List<Cat>>
 }

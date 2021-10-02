@@ -11,6 +11,7 @@ import net.app.catsnetapp.network.CatsOkHttpClient
 import net.app.catsnetapp.network.CatsRetrofitService
 import net.app.catsnetapp.repository.CatsNetRepository
 import net.app.catsnetapp.repository.ErrorsHandler
+import net.app.catsnetapp.ui.cat.CatViewModel
 import net.app.catsnetapp.ui.list.CatsDiffCallback
 import net.app.catsnetapp.ui.main.MainViewModel
 import net.app.catsnetapp.utils.*
@@ -37,6 +38,8 @@ val appModule = module {
 
     // Ui
     viewModel { MainViewModel(get()) }
+    viewModel { CatViewModel() }
+
     single { CatsDiffCallback() }
 
     single(named(DI_COIL_IMAGE_LOADER)) {

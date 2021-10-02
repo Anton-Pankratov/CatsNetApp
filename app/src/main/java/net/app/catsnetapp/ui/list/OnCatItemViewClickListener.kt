@@ -1,8 +1,8 @@
 package net.app.catsnetapp.ui.list
 
-import net.app.catsnetapp.models.Cat
+import android.graphics.drawable.Drawable
 
 fun interface OnCatItemViewClickListener {
 
-    fun onClick(cat: Cat)
+    fun onClick(image: String?)
 }

@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope
         ).apply {
             setOnCatClickListener {
+                viewModel.keepCatDrawable(it)
                 CatFragment.create().show(
                     supportFragmentManager, "cat"
                 )
