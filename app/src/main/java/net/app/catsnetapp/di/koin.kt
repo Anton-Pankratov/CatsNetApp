@@ -1,8 +1,8 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
-import coil.Coil
 import coil.ImageLoader
+import coil.request.ImageRequest
 import coil.util.CoilUtils
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -40,16 +40,12 @@ val appModule = module {
     single { CatsDiffCallback() }
 
     single(named(DI_COIL_IMAGE_LOADER)) {
-        Coil.setImageLoader(
-            ImageLoader.Builder(get(named(DI_CONTEXT)))
-                .crossfade(true)
-                .okHttpClient {
-                    OkHttpClient.Builder()
-                        .cache(CoilUtils.createDefaultCache(get(named(DI_CONTEXT))))
-                        .build()
-                }.build()
-        )
+        ImageLoader.Builder(get(named(DI_CONTEXT)))
+            .crossfade(true)
+            .okHttpClient {
+                OkHttpClient.Builder()
+                    .cache(CoilUtils.createDefaultCache(get(named(DI_CONTEXT))))
+                    .build()
+            }.build()
     }
-
-    single(named(DI_COIL_IMAGE_REQUEST)) {  }
 }

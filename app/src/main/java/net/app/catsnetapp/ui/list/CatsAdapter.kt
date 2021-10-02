@@ -3,11 +3,15 @@ package net.app.catsnetapp.ui.list
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import coil.ImageLoader
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import net.app.catsnetapp.models.Cat
-import net.app.catsnetapp.ui.main.MainViewModel
 
-class CatsAdapter(private val viewModel: MainViewModel) :
-    ListAdapter<Cat, CatViewHolder>(viewModel.catsDiffCallback) {
+class CatsAdapter(
+    private val diffCallback: CatsDiffCallback,
+    private val imageLoader: ImageLoader,
+    private val coroutineScope: CoroutineScope
+) : ListAdapter<Cat, CatViewHolder>(diffCallback) {
 
     private var onCatClickListener: OnCatItemViewClickListener? = null
 
@@ -16,7 +20,9 @@ class CatsAdapter(private val viewModel: MainViewModel) :
     }
 
     override fun onBindViewHolder(holder: CatViewHolder, position: Int) {
-        holder.onBind(getItem(position), onCatClickListener, viewModel)
+        coroutineScope.launch {
+            holder.onBind(getItem(position), onCatClickListener, imageLoader)
+        }
     }
 
     fun setOnCatClickListener(listener: OnCatItemViewClickListener) {

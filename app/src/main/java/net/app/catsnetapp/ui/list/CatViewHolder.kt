@@ -5,48 +5,55 @@ import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
 import coil.ImageLoader
-import coil.imageLoader
 import coil.load
+import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
 import net.app.catsnetapp.models.Cat
-import net.app.catsnetapp.ui.main.MainViewModel
 import net.app.catsnetapp.utils.toDp
+import org.koin.core.component.KoinComponent
 
 const val IMAGE_SIZE = 140
 const val IMAGE_MARGIN = 8
 const val CORNERS_SIZE = 16f
 
 class CatViewHolder(private val catView: AppCompatImageView) :
-    RecyclerView.ViewHolder(catView) {
+    RecyclerView.ViewHolder(catView), KoinComponent {
 
     var cat: Cat? = null
         private set
 
-    fun onBind(
+    suspend fun onBind(
         cat: Cat, listener: OnCatItemViewClickListener?,
-        viewModel: MainViewModel
+        imageLoader: ImageLoader
     ) {
         this.cat = cat
-        with(viewModel) {
-            catView.apply {
-                load(cat.url, imageLoader) {
-                    crossfade(true)
-                    transformations(RoundedCornersTransformation(CORNERS_SIZE))
-                }
-                setOnClickListener { listener?.onClick(cat) }
-            }
-        }
+        catView.setCatImage(listener, imageLoader)
     }
 
-    private fun ImageView.setCatImage() {
-        // https://stackoverflow.com/questions/13402782/show-dialogfragment-with-animation-growing-from-a-point
+    private suspend fun ImageView.setCatImage(
+        listener: OnCatItemViewClickListener?,
+        imageLoader: ImageLoader
+    ) {
+        val request = ImageRequest.Builder(context).apply {
+            data(cat?.url)
+            crossfade(true)
+            transformations(RoundedCornersTransformation(CORNERS_SIZE))
+            target(this@setCatImage)
+        }.build()
+
+        imageLoader.enqueue(request)
+        imageLoader.execute(request).drawable
+
+        setOnClickListener {
+            cat?.let { listener?.onClick(it) }
+        }
     }
 
     companion object {
         fun create(context: Context) =
-            CatImageView(context).let(::CatViewHolder)
+            createView(context).let(::CatViewHolder)
 
-        private fun CatImageView(context: Context): AppCompatImageView {
+        private fun createView(context: Context): AppCompatImageView {
             context.apply {
                 return AppCompatImageView(this)
                     .apply { setViewParams() }
@@ -56,7 +63,8 @@ class CatViewHolder(private val catView: AppCompatImageView) :
         private fun AppCompatImageView.setViewParams() {
             layoutParams = RecyclerView.LayoutParams(
                 RecyclerView.LayoutParams.MATCH_PARENT,
-                context.toDp(IMAGE_SIZE)).apply { setMargins(context) }
+                context.toDp(IMAGE_SIZE)
+            ).apply { setMargins(context) }
         }
 
         private fun RecyclerView.LayoutParams.setMargins(context: Context) {

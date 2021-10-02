@@ -1,5 +1,7 @@
-<androidx.recyclerview.widget.RecyclerView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"/>
+    android:fitsSystemWindows="true"
+    android:background="@color/amber_300"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp" />
