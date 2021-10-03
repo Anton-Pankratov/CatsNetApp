@@ -7,9 +7,8 @@ import kotlinx.coroutines.CoroutineScope
 import net.app.catsnetapp.models.Cat
 
 class CatsAdapter(
-    private val diffCallback: CatsDiffCallback,
-    private val imageLoader: ImageLoader,
-    private val coroutineScope: CoroutineScope
+    diffCallback: CatsDiffCallback,
+    private val imageLoader: ImageLoader
 ) : ListAdapter<Cat, CatViewHolder>(diffCallback) {
 
     private var onCatClickListener: OnCatItemViewClickListener? = null

@@ -1,59 +1,47 @@
 package net.app.catsnetapp.ui.cat
 
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.app.Dialog
-import android.media.Image
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import coil.load
-import coil.request.ImageRequest
-import coil.transform.RoundedCornersTransformation
-import net.app.catsnetapp.R
-import net.app.catsnetapp.ui.list.CORNERS_SIZE
+import net.app.catsnetapp.databinding.FragmentCatBinding
+import net.app.catsnetapp.utils.setCatImage
+import net.app.catsnetapp.utils.startFlipAnimation
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CatFragment : DialogFragment() {
 
     private val viewModel: CatViewModel by viewModel()
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return AlertDialog.Builder(requireActivity()).apply {
-            LayoutInflater.from(context).inflate(R.layout.fragment_cat, null).apply {
-                setView(this.apply {
-                    val catView = findViewById<ImageView>(R.id.cat_image)
-                    val request = ImageRequest.Builder(context).apply {
-                        data(viewModel.catImage)
-                        crossfade(true)
-                        transformations(RoundedCornersTransformation(CORNERS_SIZE))
-                        target(catView)
-                    }.build()
+    private var _binding: FragmentCatBinding? = null
+    private val binding get() = _binding
 
-                    viewModel.imageLoader.enqueue(request)
-                })
-            }
-        }.create()
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        _binding = FragmentCatBinding.inflate(layoutInflater)
+        return binding?.buildDialog() as Dialog
     }
 
     override fun onStart() {
         super.onStart()
-        val scaleDown: ObjectAnimator = ObjectAnimator.ofPropertyValuesHolder(
-            dialog?.window?.decorView,
-            PropertyValuesHolder.ofFloat("scaleX", 0.0f, 1.0f),
-            PropertyValuesHolder.ofFloat("scaleY", 0.0f, 1.0f),
-            PropertyValuesHolder.ofFloat("alpha", 0.0f, 1.0f),
-            PropertyValuesHolder.ofFloat("rotationY", 0f, 360f)
-        )
-        scaleDown.duration = 1000
-        scaleDown.start()
+        dialog?.window?.apply {
+            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            decorView.startFlipAnimation()
+        }
     }
 
+    private fun FragmentCatBinding?.buildDialog() =
+        AlertDialog.Builder(requireActivity()).apply {
+            with(viewModel) {
+                this@buildDialog?.apply {
+                    setView(root.apply {
+                        catImageView.setCatImage(keptCatImage, imageLoader)
+                    })
+                }
+            }
+        }.create()
+
     companion object {
-        fun create(): CatFragment {
-            return CatFragment()
-        }
+        fun create() = CatFragment()
     }
 }

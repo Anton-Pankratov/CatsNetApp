@@ -12,7 +12,7 @@ abstract class BaseViewModel : ViewModel(), KoinComponent {
 
     val imageLoader: ImageLoader by inject(named(DI_COIL_IMAGE_LOADER))
 
-    val catImage get() = selectedCatImage
+    val keptCatImage get() = selectedCatImage
 
     fun keepCatDrawable(image: String?) {
         selectedCatImage = image
@@ -21,5 +21,4 @@ abstract class BaseViewModel : ViewModel(), KoinComponent {
     companion object {
         var selectedCatImage: String? = null
     }
-
 }

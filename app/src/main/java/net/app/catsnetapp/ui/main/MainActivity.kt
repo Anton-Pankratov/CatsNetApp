@@ -2,17 +2,11 @@ package net.app.catsnetapp.ui.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.*
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.ActivityMainBinding
 import net.app.catsnetapp.ui.cat.CatFragment
-import net.app.catsnetapp.ui.list.CatsAdapter
+import net.app.catsnetapp.ui.main.view.CatsView
 import net.app.catsnetapp.utils.configureSystemBars
 import org.koin.androidx.viewmodel.ext.android.viewModel
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,27 +15,14 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding
 
-    private val catsAdapter: CatsAdapter by lazy {
-        CatsAdapter(
-            viewModel.catsDiffCallback,
-            viewModel.imageLoader,
-            lifecycleScope
-        ).apply {
-            setOnCatClickListener {
-                viewModel.keepCatDrawable(it)
-                CatFragment.create().show(
-                    supportFragmentManager, "cat"
-                )
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding?.root)
-        configureCatsRecyclerView()
-        collectCats()
+
+        setContentView(binding?.root?.apply {
+            listenOnCatViewClickEvents()
+            observeCats(viewModel.cats)
+        })
     }
 
     override fun onResume() {
@@ -54,19 +35,12 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun configureCatsRecyclerView() {
-        binding?.root?.apply {
-            layoutManager = GridLayoutManager(
-                this@MainActivity, 3)
-            adapter = catsAdapter
-        }
-    }
-
-    private fun collectCats() {
-        lifecycleScope.launch {
-            viewModel.cats.collect {
-                catsAdapter.submitList(it)
-            }
+    private fun CatsView.listenOnCatViewClickEvents() {
+        setCatClickEventListener {
+            viewModel.keepCatDrawable(it)
+            CatFragment.create().show(
+                supportFragmentManager, "cat"
+            )
         }
     }
 }

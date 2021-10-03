@@ -13,13 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.models.Cat
-import net.app.catsnetapp.utils.toDp
+import net.app.catsnetapp.utils.*
 import org.koin.core.component.KoinComponent
 import kotlin.coroutines.coroutineContext
-
-const val IMAGE_SIZE = 140
-const val IMAGE_MARGIN = 8
-const val CORNERS_SIZE = 16f
 
 class CatViewHolder(private val catView: AppCompatImageView) :
     RecyclerView.ViewHolder(catView), KoinComponent {
@@ -39,14 +35,7 @@ class CatViewHolder(private val catView: AppCompatImageView) :
         listener: OnCatItemViewClickListener?,
         imageLoader: ImageLoader
     ) {
-        val request = ImageRequest.Builder(context).apply {
-            data(cat?.url)
-            crossfade(true)
-            transformations(RoundedCornersTransformation(CORNERS_SIZE))
-            target(this@setCatImage)
-        }.build()
-
-        imageLoader.enqueue(request)
+        setCatImage(cat?.url, imageLoader)
 
         setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {

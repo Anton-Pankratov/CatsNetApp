@@ -2,7 +2,6 @@ package net.app.catsnetapp.di
 
 import android.content.Context
 import coil.ImageLoader
-import coil.request.ImageRequest
 import coil.util.CoilUtils
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
