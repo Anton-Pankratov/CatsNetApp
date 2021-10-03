@@ -5,17 +5,12 @@ import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
 import coil.ImageLoader
-import coil.load
-import coil.request.ImageRequest
-import coil.transform.RoundedCornersTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.utils.*
 import org.koin.core.component.KoinComponent
-import kotlin.coroutines.coroutineContext
 
 class CatViewHolder(private val catView: AppCompatImageView) :
     RecyclerView.ViewHolder(catView), KoinComponent {
@@ -35,7 +30,8 @@ class CatViewHolder(private val catView: AppCompatImageView) :
         listener: OnCatItemViewClickListener?,
         imageLoader: ImageLoader
     ) {
-        setCatImage(cat?.url, imageLoader)
+
+        setImage(cat?.url, imageLoader)
 
         setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {

@@ -1,6 +1,7 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatActivity
 import coil.ImageLoader
 import coil.util.CoilUtils
 import com.squareup.moshi.Moshi
@@ -13,7 +14,12 @@ import net.app.catsnetapp.repository.ErrorsHandler
 import net.app.catsnetapp.ui.cat.CatViewModel
 import net.app.catsnetapp.ui.list.CatsDiffCallback
 import net.app.catsnetapp.ui.main.MainViewModel
-import net.app.catsnetapp.utils.*
+import net.app.catsnetapp.utils.API_KEY
+import net.app.catsnetapp.utils.BASE_URL
+import net.app.catsnetapp.utils.DI_COIL_IMAGE_LOADER
+import net.app.catsnetapp.utils.DI_CONTEXT
+import net.app.catsnetapp.utils.permission.StorageAccessPermission
+import net.app.catsnetapp.utils.permission.StorageAccessPermissionImpl
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -49,5 +55,11 @@ val appModule = module {
                     .cache(CoilUtils.createDefaultCache(get(named(DI_CONTEXT))))
                     .build()
             }.build()
+    }
+
+    // Storage
+
+    factory<StorageAccessPermission> { (activity: AppCompatActivity) ->
+        StorageAccessPermissionImpl(activity)
     }
 }

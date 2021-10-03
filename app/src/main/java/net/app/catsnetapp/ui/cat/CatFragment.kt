@@ -3,11 +3,13 @@ package net.app.catsnetapp.ui.cat
 import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.widget.ImageView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import net.app.catsnetapp.databinding.FragmentCatBinding
-import net.app.catsnetapp.utils.setCatImage
-import net.app.catsnetapp.utils.startFlipAnimation
+import net.app.catsnetapp.utils.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CatFragment : DialogFragment() {
@@ -24,10 +26,8 @@ class CatFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.window?.apply {
-            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-            decorView.startFlipAnimation()
-        }
+        dialog?.configureDialog()
+        binding?.configureDownloadIcon()
     }
 
     private fun FragmentCatBinding?.buildDialog() =
@@ -35,11 +35,44 @@ class CatFragment : DialogFragment() {
             with(viewModel) {
                 this@buildDialog?.apply {
                     setView(root.apply {
-                        catImageView.setCatImage(keptCatImage, imageLoader)
+                        catImageView.setImage(
+                            keptCatImage, imageLoader
+                        )
                     })
                 }
             }
         }.create()
+
+    private fun Dialog.configureDialog() {
+        window?.apply {
+            setBackgroundDrawable(
+                ColorDrawable(android.graphics.Color.TRANSPARENT)
+            )
+            decorView.startFlipAnimation()
+        }
+    }
+
+    private fun FragmentCatBinding.configureDownloadIcon() {
+        saveInGalleryView.apply {
+            startAlphaAnimation()
+            setIconByCheckOf(catImageView)
+            setOnDownloadClick()
+        }
+    }
+
+    private fun ImageView.setIconByCheckOf(sourceView: ImageView) {
+        with(viewModel) {
+            sourceView.setDownloadIcon(
+                keptCatImage, this@setIconByCheckOf, imageLoader
+            )
+        }
+    }
+
+    private fun ImageView.setOnDownloadClick() {
+        setOnClickListener {
+
+        }
+    }
 
     companion object {
         fun create() = CatFragment()

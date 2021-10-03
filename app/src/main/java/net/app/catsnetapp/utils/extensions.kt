@@ -4,14 +4,21 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.view.animation.AlphaAnimation
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
+import net.app.catsnetapp.R
 import kotlin.math.roundToInt
 import android.animation.PropertyValuesHolder as PropHolder
 
@@ -45,17 +52,70 @@ fun View.startFlipAnimation() {
     }.start()
 }
 
+fun View.startAlphaAnimation() {
+    startAnimation(
+        AlphaAnimation(0.0f, 1.0f).apply {
+            duration = 1000
+            startOffset = 1000
+            fillAfter = true
+        }
+    )
+}
+
 fun Context.toDp(value: Int): Int {
     return (value * resources.displayMetrics.density + 0.5f).roundToInt()
 }
 
-fun ImageView.setCatImage(url: String?, imageLoader: ImageLoader) {
+fun ImageView.setImage(url: String?, imageLoader: ImageLoader) {
+    imageLoader.enqueue(
+        ImageRequest.Builder(context)
+            .data(url)
+            .crossfade(true)
+            .transformations(RoundedCornersTransformation(CORNERS_SIZE))
+            .target(this@setImage)
+            .build()
+    )
+}
+
+fun ImageView.setDownloadIcon(
+    url: String?,
+    target: ImageView,
+    imageLoader: ImageLoader
+) {
     imageLoader.enqueue(
         ImageRequest.Builder(context).apply {
             data(url)
             crossfade(true)
             transformations(RoundedCornersTransformation(CORNERS_SIZE))
-            target(this@setCatImage)
+            target { bitmap ->
+                (bitmap as BitmapDrawable).bitmap.apply {
+                    target.setIconByCheck(isNearBlack())
+                }
+            }
         }.build()
     )
+}
+
+fun ImageView.setIconByCheck(isNearBlack: Boolean) {
+    setImageBitmap(
+        ContextCompat.getDrawable(
+            context,
+            if (isNearBlack)
+                R.drawable.ic_download_light
+            else
+                R.drawable.ic_download_dark
+        )?.toBitmap()
+    )
+}
+
+fun Bitmap.isNearBlack(): Boolean {
+    with(getPixel(width - 20, height - 20)) {
+        listOf(
+            Color.red(this),
+            Color.green(this),
+            Color.blue(this)
+        ).apply {
+            return any { it <= 215 }
+        }
+    }
 }
