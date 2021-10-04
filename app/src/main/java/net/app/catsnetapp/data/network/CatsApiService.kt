@@ -1,4 +1,4 @@
-package net.app.catsnetapp.network
+package net.app.catsnetapp.data.network
 
 import net.app.catsnetapp.models.Cat
 import retrofit2.Response

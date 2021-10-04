@@ -1,6 +1,6 @@
 package net.app.catsnetapp.repository
 
-import net.app.catsnetapp.network.Failure
+import net.app.catsnetapp.data.network.Failure
 import retrofit2.HttpException
 import java.net.UnknownHostException
 

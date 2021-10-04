@@ -1,4 +1,4 @@
-package net.app.catsnetapp.network
+package net.app.catsnetapp.data.network
 
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient

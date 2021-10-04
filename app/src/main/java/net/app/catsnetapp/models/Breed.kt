@@ -30,5 +30,9 @@ data class Breed(
     val social_needs: Int? = null,
     val stranger_friendly: Int? = null,
     val vocalisation: Int? = null
+) {
 
-)
+    fun getShowName(timeStamp: String?): String? {
+        return name ?: alt_names?: timeStamp
+    }
+}

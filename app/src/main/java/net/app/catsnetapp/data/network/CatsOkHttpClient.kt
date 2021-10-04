@@ -1,4 +1,4 @@
-package net.app.catsnetapp.network
+package net.app.catsnetapp.data.network
 
 import net.app.catsnetapp.utils.API_KEY
 import net.app.catsnetapp.utils.CONNECT_TIME

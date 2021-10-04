@@ -1,16 +1,26 @@
 package net.app.catsnetapp.repository
 
+import android.content.ContentResolver
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import net.app.catsnetapp.data.network.ApiResponse
+import net.app.catsnetapp.data.network.CatsApiService
+import net.app.catsnetapp.data.network.Success
+import net.app.catsnetapp.data.storage.CatImageSaver
+import net.app.catsnetapp.data.storage.SaveImageState
 import net.app.catsnetapp.models.Cat
-import net.app.catsnetapp.network.ApiResponse
-import net.app.catsnetapp.network.CatsApiService
-import net.app.catsnetapp.network.Success
+import net.app.catsnetapp.models.StoredCatImage
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import retrofit2.Response
 
-class CatsNetRepository(private val apiService: CatsApiService) : KoinComponent {
+class CatsNetRepository(
+    private val apiService: CatsApiService,
+    private val inGallerySaver: CatImageSaver
+) : KoinComponent {
+
+    val saveState: StateFlow<SaveImageState>
+        get() = inGallerySaver.saveImageState
 
     private val errorsHandler: ErrorsHandler by inject()
 
@@ -22,5 +32,9 @@ class CatsNetRepository(private val apiService: CatsApiService) : KoinComponent 
                 errorsHandler.handle(e)
             }
         }
+    }
+
+    fun saveCatImageInGallery(contentResolver: ContentResolver?, image: StoredCatImage) {
+        inGallerySaver.saveCatImageInGallery(contentResolver, image)
     }
 }

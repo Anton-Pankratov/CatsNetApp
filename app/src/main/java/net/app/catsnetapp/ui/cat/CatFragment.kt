@@ -4,11 +4,10 @@ import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.widget.ImageView
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import net.app.catsnetapp.databinding.FragmentCatBinding
+import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.utils.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -18,6 +17,16 @@ class CatFragment : DialogFragment() {
 
     private var _binding: FragmentCatBinding? = null
     private val binding get() = _binding
+
+    private val cat get() = viewModel.keptCat
+
+    private val storedCat by lazy {
+        StoredCatImage(
+            bitmap = requireContext().getCatImage(cat?.url, viewModel.imageLoader),
+            name = cat?.getBreedIfSingle()?.getShowName(viewModel.timeStamp),
+            url = cat?.url
+        )
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = FragmentCatBinding.inflate(layoutInflater)
@@ -36,7 +45,7 @@ class CatFragment : DialogFragment() {
                 this@buildDialog?.apply {
                     setView(root.apply {
                         catImageView.setImage(
-                            keptCatImage, imageLoader
+                            cat?.url, imageLoader
                         )
                     })
                 }
@@ -63,14 +72,16 @@ class CatFragment : DialogFragment() {
     private fun ImageView.setIconByCheckOf(sourceView: ImageView) {
         with(viewModel) {
             sourceView.setDownloadIcon(
-                keptCatImage, this@setIconByCheckOf, imageLoader
+                cat?.url, this@setIconByCheckOf, imageLoader
             )
         }
     }
 
     private fun ImageView.setOnDownloadClick() {
         setOnClickListener {
-
+            viewModel.saveCatImage(
+                activity?.contentResolver, storedCat
+            )
         }
     }
 

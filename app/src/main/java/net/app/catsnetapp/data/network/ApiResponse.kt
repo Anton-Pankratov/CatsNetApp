@@ -1,4 +1,4 @@
-package net.app.catsnetapp.network
+package net.app.catsnetapp.data.network
 
 sealed class ApiResponse<out S, out E>
 

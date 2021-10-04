@@ -36,7 +36,7 @@ class CatViewHolder(private val catView: AppCompatImageView) :
         setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
                 cat?.let {
-                    listener?.onClick(it.url)
+                    listener?.onClick(it)
                 }
             }
         }

@@ -1,14 +1,15 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import coil.ImageLoader
 import coil.util.CoilUtils
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import net.app.catsnetapp.BuildConfig
-import net.app.catsnetapp.network.CatsOkHttpClient
-import net.app.catsnetapp.network.CatsRetrofitService
+import net.app.catsnetapp.data.network.CatsOkHttpClient
+import net.app.catsnetapp.data.network.CatsRetrofitService
+import net.app.catsnetapp.data.storage.CatImageSaver
+import net.app.catsnetapp.data.storage.CatImageSaverImpl
 import net.app.catsnetapp.repository.CatsNetRepository
 import net.app.catsnetapp.repository.ErrorsHandler
 import net.app.catsnetapp.ui.cat.CatViewModel
@@ -18,8 +19,6 @@ import net.app.catsnetapp.utils.API_KEY
 import net.app.catsnetapp.utils.BASE_URL
 import net.app.catsnetapp.utils.DI_COIL_IMAGE_LOADER
 import net.app.catsnetapp.utils.DI_CONTEXT
-import net.app.catsnetapp.utils.permission.StorageAccessPermission
-import net.app.catsnetapp.utils.permission.StorageAccessPermissionImpl
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -39,11 +38,11 @@ val appModule = module {
     single { ErrorsHandler }
 
     // Repository
-    factory { CatsNetRepository(get()) }
+    factory { CatsNetRepository(get(), get()) }
 
     // Ui
     viewModel { MainViewModel(get()) }
-    viewModel { CatViewModel() }
+    viewModel { CatViewModel(get()) }
 
     single { CatsDiffCallback() }
 
@@ -59,7 +58,5 @@ val appModule = module {
 
     // Storage
 
-    factory<StorageAccessPermission> { (activity: AppCompatActivity) ->
-        StorageAccessPermissionImpl(activity)
-    }
+    single<CatImageSaver> { CatImageSaverImpl() }
 }
