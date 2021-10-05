@@ -1,21 +1,29 @@
 package net.app.catsnetapp.ui.main
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.ActivityMainBinding
+import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.ui.cat.CatFragment
 import net.app.catsnetapp.ui.main.view.CatsView
 import net.app.catsnetapp.utils.configureSystemBars
+import net.app.catsnetapp.utils.getCatImage
+import net.app.catsnetapp.utils.permission.StorageAccessPermission
 import net.app.catsnetapp.utils.toast
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModel()
+
+    private val permission: StorageAccessPermission by inject {
+        parametersOf(this)
+    }
 
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding
@@ -28,6 +36,15 @@ class MainActivity : AppCompatActivity() {
             listenOnCatViewClickEvents()
             observeCats(viewModel.cats)
             collectSaveStateEvent()
+
+            permission.setPermissionCallback {
+                viewModel.saveCatImage(
+                    contentResolver, StoredCatImage(
+                        getCatImage(viewModel.keptCat?.url, viewModel.imageLoader),
+                        viewModel.keptCat?.url, ""
+                    )
+                )
+            }
         })
     }
 
@@ -39,6 +56,14 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         _binding = null
         super.onDestroy()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     private fun CatsView.listenOnCatViewClickEvents() {

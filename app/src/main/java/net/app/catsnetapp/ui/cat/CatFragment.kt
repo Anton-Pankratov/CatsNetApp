@@ -9,11 +9,18 @@ import androidx.fragment.app.DialogFragment
 import net.app.catsnetapp.databinding.FragmentCatBinding
 import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.utils.*
+import net.app.catsnetapp.utils.permission.StorageAccessPermission
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 class CatFragment : DialogFragment() {
 
     private val viewModel: CatViewModel by viewModel()
+
+    private val permission: StorageAccessPermission by inject {
+        parametersOf(activity)
+    }
 
     private var _binding: FragmentCatBinding? = null
     private val binding get() = _binding
@@ -79,9 +86,11 @@ class CatFragment : DialogFragment() {
 
     private fun ImageView.setOnDownloadClick() {
         setOnClickListener {
-            viewModel.saveCatImage(
-                activity?.contentResolver, storedCat
-            )
+            permission.checkPermission {
+                viewModel.saveCatImage(
+                    activity?.contentResolver, storedCat
+                )
+            }
         }
     }
 

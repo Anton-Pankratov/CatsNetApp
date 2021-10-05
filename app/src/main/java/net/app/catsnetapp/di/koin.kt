@@ -1,6 +1,7 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatActivity
 import coil.ImageLoader
 import coil.util.CoilUtils
 import com.squareup.moshi.Moshi
@@ -19,6 +20,8 @@ import net.app.catsnetapp.utils.API_KEY
 import net.app.catsnetapp.utils.BASE_URL
 import net.app.catsnetapp.utils.DI_COIL_IMAGE_LOADER
 import net.app.catsnetapp.utils.DI_CONTEXT
+import net.app.catsnetapp.utils.permission.StorageAccessPermission
+import net.app.catsnetapp.utils.permission.StorageAccessPermissionImpl
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
@@ -57,6 +60,10 @@ val appModule = module {
     }
 
     // Storage
+
+    single<StorageAccessPermission> { (activity: AppCompatActivity) ->
+        StorageAccessPermissionImpl(activity)
+    }
 
     single<CatImageSaver> { CatImageSaverImpl() }
 }

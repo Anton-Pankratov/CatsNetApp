@@ -1,5 +1,6 @@
 package net.app.catsnetapp.ui.main
 
+import android.content.ContentResolver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,7 @@ import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.data.network.Failure
 import net.app.catsnetapp.data.network.Success
 import net.app.catsnetapp.data.storage.SaveImageState
+import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.repository.CatsNetRepository
 import net.app.catsnetapp.ui.base.BaseViewModel
 import kotlin.coroutines.CoroutineContext
@@ -28,6 +30,10 @@ class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel()
 
     init {
         fetchCatsImages()
+    }
+
+    fun saveCatImage(contentResolver: ContentResolver?, image: StoredCatImage) {
+        repository.saveCatImageInGallery(contentResolver, image)
     }
 
     private fun fetchCatsImages() {

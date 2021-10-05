@@ -98,6 +98,20 @@ fun Context.toast(@StringRes message: Int) {
     Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show()
 }
 
+fun Context.showPermissionRequestDialog(
+    title: String,
+    body: String,
+    callback: () -> Unit
+) {
+    AlertDialog.Builder(this).also {
+        it.setTitle(title)
+        it.setMessage(body)
+        it.setPositiveButton("Ok") { _, _ ->
+            callback()
+        }
+    }.create().show()
+}
+
 fun ImageView.setImage(url: String?, imageLoader: ImageLoader) {
     imageLoader.enqueue(
         ImageRequest.Builder(context)
