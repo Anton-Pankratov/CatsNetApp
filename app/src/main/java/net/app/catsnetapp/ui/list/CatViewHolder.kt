@@ -1,15 +1,23 @@
 package net.app.catsnetapp.ui.list
 
 import android.content.Context
+import android.os.Build
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
 import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.load
+import coil.transform.RoundedCornersTransformation
+import coil.util.CoilUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.utils.*
+import okhttp3.OkHttpClient
 import org.koin.core.component.KoinComponent
 
 class CatViewHolder(private val catView: AppCompatImageView) :
@@ -18,27 +26,36 @@ class CatViewHolder(private val catView: AppCompatImageView) :
     var cat: Cat? = null
         private set
 
-    fun onBind(
+    suspend fun onBind(
         cat: Cat, listener: OnCatItemViewClickListener?,
         imageLoader: ImageLoader
     ) {
         this.cat = cat
-        catView.setCatImage(listener, imageLoader)
+        catView.apply {
+            setCatImage(imageLoader, listener)
+        }
     }
 
-    private fun ImageView.setCatImage(
-        listener: OnCatItemViewClickListener?,
-        imageLoader: ImageLoader
+    private suspend fun ImageView.setCatImage(
+        imageLoader: ImageLoader,
+        listener: OnCatItemViewClickListener?
     ) {
+        withContext(Dispatchers.Main) {
+            setImage(cat?.url, imageLoader)
+            setOnCatClickListener(listener)
+        }
+    }
 
-        setImage(cat?.url, imageLoader)
-
+    private fun ImageView.setOnCatClickListener(
+        listener: OnCatItemViewClickListener?
+    ) {
         setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Main).launch {
                 cat?.let {
                     listener?.onClick(it)
                 }
             }
+
         }
     }
 

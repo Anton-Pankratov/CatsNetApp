@@ -1,8 +1,11 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import coil.util.CoilUtils
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -25,6 +28,7 @@ import net.app.catsnetapp.utils.permission.StorageAccessPermissionImpl
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
+import org.koin.core.scope.get
 import org.koin.dsl.module
 
 val appModule = module {
@@ -50,11 +54,19 @@ val appModule = module {
     single { CatsDiffCallback() }
 
     single(named(DI_COIL_IMAGE_LOADER)) {
-        ImageLoader.Builder(get(named(DI_CONTEXT)))
+        val context = get(named(DI_CONTEXT)) as Context
+        ImageLoader.Builder(context)
+            .componentRegistry {
+                add(
+                    if (Build.VERSION.SDK_INT >= 28)
+                        ImageDecoderDecoder(context)
+                     else GifDecoder()
+                )
+            }
             .crossfade(true)
             .okHttpClient {
                 OkHttpClient.Builder()
-                    .cache(CoilUtils.createDefaultCache(get(named(DI_CONTEXT))))
+                    .cache(CoilUtils.createDefaultCache(context))
                     .build()
             }.build()
     }

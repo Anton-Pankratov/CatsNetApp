@@ -30,7 +30,7 @@ class CatFragment : DialogFragment() {
     private val storedCat by lazy {
         StoredCatImage(
             bitmap = requireContext().getCatImage(cat?.url, viewModel.imageLoader),
-            name = cat?.getBreedIfSingle()?.getShowName(viewModel.timeStamp),
+            name = cat?.getBreed()?.getShowName(viewModel.timeStamp) ?: viewModel.timeStamp,
             url = cat?.url
         )
     }

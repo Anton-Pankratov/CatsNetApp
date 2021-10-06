@@ -3,6 +3,8 @@ package net.app.catsnetapp.ui.main
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.ActivityMainBinding
@@ -30,21 +32,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setOnDeniedPermission()
         _binding = ActivityMainBinding.inflate(layoutInflater)
-
         setContentView(binding?.root?.apply {
             listenOnCatViewClickEvents()
             observeCats(viewModel.cats)
+            addPagination()
             collectSaveStateEvent()
-
-            permission.setPermissionCallback {
-                viewModel.saveCatImage(
-                    contentResolver, StoredCatImage(
-                        getCatImage(viewModel.keptCat?.url, viewModel.imageLoader),
-                        viewModel.keptCat?.url, ""
-                    )
-                )
-            }
         })
     }
 
@@ -77,13 +71,43 @@ class MainActivity : AppCompatActivity() {
 
     private fun collectSaveStateEvent() {
         lifecycleScope.launch {
-            viewModel.saveStateEvent.collect {
+            viewModel.saveStateEvent.observe(this@MainActivity) {
                 it.message.apply {
                     if (this != null) {
                         toast(this)
                     }
                 }
             }
+        }
+    }
+
+    private fun CatsView.addPagination() {
+        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy > 0) {
+                    layoutManager?.let { manager ->
+                        manager.apply {
+                            val pastVisibleItems =
+                                (this as GridLayoutManager).findFirstVisibleItemPosition()
+
+                            if ((childCount + pastVisibleItems) >= itemCount) {
+                                viewModel.fetchCatsImages()
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    private fun setOnDeniedPermission() {
+        permission.setPermissionCallback {
+            viewModel.saveCatImage(
+                contentResolver, StoredCatImage(
+                    getCatImage(viewModel.keptCat?.url, viewModel.imageLoader),
+                    viewModel.keptCat?.url, ""
+                )
+            )
         }
     }
 }

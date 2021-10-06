@@ -8,8 +8,11 @@ data class Cat(
     val height: Int?
 ) {
 
-    fun getBreedIfSingle(): Breed? {
-        return if (!breeds.isNullOrEmpty() && breeds.size == 1)
-            breeds[1] else null
+    fun getBreed(): Breed? {
+        return if (!breeds.isNullOrEmpty() && breeds.size == 1) {
+            breeds[0]
+        } else if (breeds.size > 1) {
+            breeds.random()
+        } else null
     }
 }

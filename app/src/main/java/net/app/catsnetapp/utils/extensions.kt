@@ -4,12 +4,10 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -20,15 +18,12 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import coil.ImageLoader
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import coil.transform.RoundedCornersTransformation
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import net.app.catsnetapp.R
-import net.app.catsnetapp.models.Cat
 import kotlin.math.roundToInt
 import android.animation.PropertyValuesHolder as PropHolder
 
@@ -113,14 +108,16 @@ fun Context.showPermissionRequestDialog(
 }
 
 fun ImageView.setImage(url: String?, imageLoader: ImageLoader) {
-    imageLoader.enqueue(
-        ImageRequest.Builder(context)
-            .data(url)
-            .crossfade(true)
-            .transformations(RoundedCornersTransformation(CORNERS_SIZE))
-            .target(this@setImage)
-            .build()
-    )
+    run {
+        imageLoader.enqueue(
+            ImageRequest.Builder(context)
+                .data(url)
+                .crossfade(true)
+                .transformations(RoundedCornersTransformation(CORNERS_SIZE))
+                .target(this@setImage)
+                .build()
+        )
+    }
 }
 
 fun ImageView.setDownloadIcon(
