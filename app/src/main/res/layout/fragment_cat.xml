@@ -16,14 +16,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <ImageView
         android:id="@+id/save_in_gallery_view"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="@id/cat_image_view"
         app:layout_constraintEnd_toEndOf="@id/cat_image_view"
-        tools:src="@drawable/ic_download_light" />
+        tools:src="@drawable/ic_download_light"
+        android:contentDescription="@null" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

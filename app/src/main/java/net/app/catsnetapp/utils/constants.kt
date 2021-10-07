@@ -5,6 +5,7 @@ const val API_KEY = "x-api-key"
 
 const val DI_CONTEXT = "context"
 const val DI_COIL_IMAGE_LOADER = "ImageLoader"
+const val DI_GLIDE = "glide"
 
 const val CONNECT_TIME = 10000L
 

@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.ActivityMainBinding
 import net.app.catsnetapp.models.StoredCatImage
@@ -36,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root?.apply {
             listenOnCatViewClickEvents()
-            observeCats(viewModel.cats)
+            lifecycleScope.collectCats(viewModel.catsFlow)
             addPagination()
             collectSaveStateEvent()
         })
@@ -101,13 +100,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setOnDeniedPermission() {
-        permission.setPermissionCallback {
-            viewModel.saveCatImage(
-                contentResolver, StoredCatImage(
-                    getCatImage(viewModel.keptCat?.url, viewModel.imageLoader),
-                    viewModel.keptCat?.url, ""
-                )
-            )
+        viewModel.keptCat?.apply {
+            permission.setPermissionCallback {
+                lifecycleScope.launch {
+                    viewModel.apply {
+                        viewModel.saveCatImage(
+                            contentResolver, formStoredCat()
+                        )
+                    }
+                }
+            }
         }
     }
 }

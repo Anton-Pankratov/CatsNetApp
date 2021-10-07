@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.FragmentCatBinding
 import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.utils.*
@@ -27,14 +29,6 @@ class CatFragment : DialogFragment() {
 
     private val cat get() = viewModel.keptCat
 
-    private val storedCat by lazy {
-        StoredCatImage(
-            bitmap = requireContext().getCatImage(cat?.url, viewModel.imageLoader),
-            name = cat?.getBreed()?.getShowName(viewModel.timeStamp) ?: viewModel.timeStamp,
-            url = cat?.url
-        )
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = FragmentCatBinding.inflate(layoutInflater)
         return binding?.buildDialog() as Dialog
@@ -52,7 +46,7 @@ class CatFragment : DialogFragment() {
                 this@buildDialog?.apply {
                     setView(root.apply {
                         catImageView.setImage(
-                            cat?.url, imageLoader
+                            cat?.url, cat?.ext, glide
                         )
                     })
                 }
@@ -71,25 +65,28 @@ class CatFragment : DialogFragment() {
     private fun FragmentCatBinding.configureDownloadIcon() {
         saveInGalleryView.apply {
             startAlphaAnimation()
-            setIconByCheckOf(catImageView)
             setOnDownloadClick()
+            setDownloadIcon()
         }
     }
 
-    private fun ImageView.setIconByCheckOf(sourceView: ImageView) {
+    private fun ImageView.setDownloadIcon() {
         with(viewModel) {
-            sourceView.setDownloadIcon(
-                cat?.url, this@setIconByCheckOf, imageLoader
-            )
+            setDownloadIcon(cat?.url, glide)
         }
     }
 
     private fun ImageView.setOnDownloadClick() {
         setOnClickListener {
             permission.checkPermission {
-                viewModel.saveCatImage(
-                    activity?.contentResolver, storedCat
-                )
+                lifecycleScope.launch {
+                    viewModel.apply {
+                        saveCatImage(
+                            activity?.contentResolver,
+                            formStoredCat()
+                        )
+                    }
+                }
             }
         }
     }

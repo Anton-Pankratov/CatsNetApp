@@ -1,26 +1,19 @@
 package net.app.catsnetapp.ui.list
 
 import android.content.Context
-import android.os.Build
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
-import coil.ImageLoader
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
-import coil.load
-import coil.transform.RoundedCornersTransformation
-import coil.util.CoilUtils
+import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.utils.*
-import okhttp3.OkHttpClient
 import org.koin.core.component.KoinComponent
 
-class CatViewHolder(private val catView: AppCompatImageView) :
+class CatViewHolder(private val catView: ImageView) :
     RecyclerView.ViewHolder(catView), KoinComponent {
 
     var cat: Cat? = null
@@ -28,20 +21,20 @@ class CatViewHolder(private val catView: AppCompatImageView) :
 
     suspend fun onBind(
         cat: Cat, listener: OnCatItemViewClickListener?,
-        imageLoader: ImageLoader
+        glide: RequestManager
     ) {
         this.cat = cat
         catView.apply {
-            setCatImage(imageLoader, listener)
+            setCatImage(listener, glide)
         }
     }
 
     private suspend fun ImageView.setCatImage(
-        imageLoader: ImageLoader,
-        listener: OnCatItemViewClickListener?
+        listener: OnCatItemViewClickListener?,
+        glide: RequestManager
     ) {
         withContext(Dispatchers.Main) {
-            setImage(cat?.url, imageLoader)
+            setImage(cat?.url, cat?.ext, glide)
             setOnCatClickListener(listener)
         }
     }
@@ -55,7 +48,6 @@ class CatViewHolder(private val catView: AppCompatImageView) :
                     listener?.onClick(it)
                 }
             }
-
         }
     }
 
@@ -70,7 +62,7 @@ class CatViewHolder(private val catView: AppCompatImageView) :
             }
         }
 
-        private fun AppCompatImageView.setViewParams() {
+        private fun ImageView.setViewParams() {
             layoutParams = RecyclerView.LayoutParams(
                 RecyclerView.LayoutParams.MATCH_PARENT,
                 context.toDp(IMAGE_SIZE)
