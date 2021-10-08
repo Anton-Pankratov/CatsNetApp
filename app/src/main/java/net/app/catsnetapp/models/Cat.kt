@@ -14,9 +14,8 @@ data class Cat(
     }
 
     fun getName(): String? {
-        return getBreed()?.let {
-            it.name ?: it.alt_names ?: "Cat#${it.id}"
-        }
+        val breed = getBreed()
+        return breed?.name ?: breed?.alt_names ?: "Cat#$id"
     }
 
     private fun getBreed(): Breed? {

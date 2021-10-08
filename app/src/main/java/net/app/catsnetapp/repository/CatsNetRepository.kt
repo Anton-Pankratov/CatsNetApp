@@ -2,8 +2,8 @@ package net.app.catsnetapp.repository
 
 import android.content.ContentResolver
 import androidx.lifecycle.LiveData
+import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import net.app.catsnetapp.data.network.ApiResponse
 import net.app.catsnetapp.data.network.CatsApiService
@@ -35,7 +35,10 @@ class CatsNetRepository(
         }
     }
 
-    fun saveCatImageInGallery(contentResolver: ContentResolver?, image: StoredCatImage) {
+    fun saveCatImageInGallery(
+        contentResolver: ContentResolver?,
+        image: StoredCatImage
+    ) {
         inGallerySaver.saveCatImageInGallery(contentResolver, image)
     }
 }

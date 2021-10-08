@@ -2,15 +2,19 @@ package net.app.catsnetapp.data.storage
 
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
+import com.bumptech.glide.load.resource.gif.GifBitmapProvider
+import com.bumptech.glide.load.resource.gif.GifDrawable
 import net.app.catsnetapp.models.StoredCatImage
 import java.io.File
 import java.io.FileOutputStream
@@ -37,6 +41,9 @@ class CatImageSaverImpl : CatImageSaver {
                     saveForApi29Less()
                 }
                 stream.use {
+                    if (ext == "gif") {
+
+                    }
                     bitmap?.compress(
                         Bitmap.CompressFormat.JPEG, 100, it
                     )

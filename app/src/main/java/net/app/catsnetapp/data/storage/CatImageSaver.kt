@@ -2,7 +2,6 @@ package net.app.catsnetapp.data.storage
 
 import android.content.ContentResolver
 import androidx.lifecycle.LiveData
-import kotlinx.coroutines.flow.StateFlow
 import net.app.catsnetapp.models.StoredCatImage
 import java.io.OutputStream
 

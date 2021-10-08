@@ -101,12 +101,19 @@ suspend fun getCatImage(
 }
 
 fun ImageView.setImage(url: String?, ext: String?, glide: RequestManager) {
+
     run {
         glide.apply {
             if (ext != "gif") {
-                load(url).apply(createGlideRequestOptions()).into(this@run)
+                load(url)
+                    .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_cat_placeholder))
+                    .apply(createGlideRequestOptions())
+                    .into(this@setImage)
             } else {
-                asGif().load(url).apply(createGlideRequestOptions()).into(this@run)
+                asGif().load(url)
+                    .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_cat_placeholder))
+                    .apply(createGlideRequestOptions())
+                    .into(this@setImage)
             }
         }
     }
@@ -116,18 +123,31 @@ fun ImageView.setDownloadIcon(
     url: String?,
     glide: RequestManager
 ) {
+    var tries = 0
+    if (tries == 2) {
+        context.toast(R.string.save_image_exception)
+        return
+    }
     CoroutineScope(Dispatchers.IO).launch {
-        glide.apply {
-            (asBitmap()
-                .load(url)
-                .apply(createGlideRequestOptions())
-                .submit()
-                .get()).apply {
-                    setIconByCheck(isNearBlack())
-                }
+        try {
+            getImage(url, glide)
+        } catch (e: Exception) {
+            tries++
+            setDownloadIcon(url, glide)
         }
     }
+}
 
+private fun ImageView.getImage(url: String?, glide: RequestManager) {
+    glide.apply {
+        (asBitmap()
+            .load(url)
+            .apply(createGlideRequestOptions())
+            .submit()
+            .get()).apply {
+                setIconByCheck(isNearBlack())
+            }
+    }
 }
 
 fun ImageView.setIconByCheck(isNearBlack: Boolean) {
@@ -141,33 +161,6 @@ fun ImageView.setIconByCheck(isNearBlack: Boolean) {
         )?.toBitmap()
     )
 }
-
-/* android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views.
-        at android.view.ViewRootImpl.checkThread(ViewRootImpl.java:7753)
-        at android.view.ViewRootImpl.requestLayout(ViewRootImpl.java:1225)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.view.View.requestLayout(View.java:23093)
-        at androidx.constraintlayout.widget.ConstraintLayout.requestLayout(ConstraintLayout.java:3146)
-        at android.view.View.requestLayout(View.java:23093)
-        at android.widget.ImageView.setImageDrawable(ImageView.java:571)
-        at androidx.appcompat.widget.AppCompatImageView.setImageDrawable(AppCompatImageView.java:104)
-        at android.widget.ImageView.setImageBitmap(ImageView.java:705)
-        at androidx.appcompat.widget.AppCompatImageView.setImageBitmap(AppCompatImageView.java:112)
-        at net.app.catsnetapp.utils.ExtensionsKt.setIconByCheck(extensions.kt:134)
-        at net.app.catsnetapp.utils.ExtensionsKt$setDownloadIcon$1.invokeSuspend(extensions.kt:126)
-        at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
-        at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:106)
-        at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:571)
-        at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:750)
-        at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:678)
-        at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:665)*/
 
 fun Bitmap.isNearBlack(): Boolean {
     with(getPixel(width - 20, height - 20)) {
@@ -184,3 +177,4 @@ fun Bitmap.isNearBlack(): Boolean {
 fun createGlideRequestOptions(): RequestOptions {
     return RequestOptions().transform(CenterCrop(), RoundedCorners(16))
 }
+
