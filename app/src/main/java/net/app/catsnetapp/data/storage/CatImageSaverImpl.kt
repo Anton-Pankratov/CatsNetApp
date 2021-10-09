@@ -2,19 +2,13 @@ package net.app.catsnetapp.data.storage
 
 import android.content.ContentResolver
 import android.content.ContentValues
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.bumptech.glide.RequestManager
-import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
-import com.bumptech.glide.load.resource.gif.GifBitmapProvider
-import com.bumptech.glide.load.resource.gif.GifDrawable
 import net.app.catsnetapp.models.StoredCatImage
 import java.io.File
 import java.io.FileOutputStream
@@ -42,10 +36,11 @@ class CatImageSaverImpl : CatImageSaver {
                 }
                 stream.use {
                     if (ext == "gif") {
-
                     }
                     bitmap?.compress(
-                        Bitmap.CompressFormat.JPEG, 100, it
+                        Bitmap.CompressFormat.JPEG,
+                        100,
+                        it
                     )
                     _saveImageState.postValue(SaveImageState.SUCCESS)
                 }
@@ -60,7 +55,8 @@ class CatImageSaverImpl : CatImageSaver {
         contentResolver: ContentResolver?
     ): OutputStream? {
         return contentResolver?.let {
-            it.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            it.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 ContentValues().apply {
                     put(Column.DISPLAY_NAME, "$name$ext")
                     put(Column.MIME_TYPE, "image/$ext")

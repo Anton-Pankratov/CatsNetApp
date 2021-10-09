@@ -33,6 +33,6 @@ data class Breed(
 ) {
 
     fun getShowName(timeStamp: String?): String? {
-        return name ?: alt_names?: timeStamp
+        return name ?: alt_names ?: timeStamp
     }
 }

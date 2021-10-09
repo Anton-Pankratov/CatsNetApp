@@ -1,7 +1,6 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
@@ -46,7 +45,7 @@ val appModule = module {
 
     single { CatsDiffCallback() }
 
-    single(named(DI_GLIDE)) { Glide.with(androidContext())}
+    single(named(DI_GLIDE)) { Glide.with(androidContext()) }
 
     // Storage
 

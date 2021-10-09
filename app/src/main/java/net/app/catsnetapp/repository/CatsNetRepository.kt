@@ -2,7 +2,6 @@ package net.app.catsnetapp.repository
 
 import android.content.ContentResolver
 import androidx.lifecycle.LiveData
-import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.app.catsnetapp.data.network.ApiResponse

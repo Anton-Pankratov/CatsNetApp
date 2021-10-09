@@ -9,7 +9,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.FragmentCatBinding
-import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.utils.*
 import net.app.catsnetapp.utils.permission.StorageAccessPermission
 import org.koin.android.ext.android.inject
@@ -44,11 +43,15 @@ class CatFragment : DialogFragment() {
         AlertDialog.Builder(requireActivity()).apply {
             with(viewModel) {
                 this@buildDialog?.apply {
-                    setView(root.apply {
-                        catImageView.setImage(
-                            cat?.url, cat?.ext, glide
-                        )
-                    })
+                    setView(
+                        root.apply {
+                            catImageView.setImage(
+                                cat?.url,
+                                cat?.ext,
+                                glide
+                            )
+                        }
+                    )
                 }
             }
         }.create()
@@ -64,7 +67,7 @@ class CatFragment : DialogFragment() {
 
     private fun FragmentCatBinding.configureDownloadIcon() {
         saveInGalleryView.apply {
-            startAlphaAnimation()
+            startAlphaAnimation(ANIM_DURATION_ICON)
             setOnDownloadClick()
             setDownloadIcon()
         }

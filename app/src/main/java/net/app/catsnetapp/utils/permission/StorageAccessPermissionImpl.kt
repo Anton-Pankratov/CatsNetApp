@@ -32,18 +32,19 @@ class StorageAccessPermissionImpl(private val activity: AppCompatActivity) :
         activity.apply {
             when {
                 ContextCompat.checkSelfPermission(
-                    activity, writeStoragePermission
+                    activity,
+                    writeStoragePermission
                 ) == PackageManager.PERMISSION_GRANTED -> {
                     action.invoke()
                 }
                 Build.VERSION.SDK_INT >= 23 &&
-                        shouldShowRequestPermissionRationale(writeStoragePermission) -> {
-                            showPermissionRequestDialog(
-                                "", ""
-                            ) {
-                                permissionRequest?.launch(writeStoragePermission)
-                            }
-
+                    shouldShowRequestPermissionRationale(writeStoragePermission) -> {
+                    showPermissionRequestDialog(
+                        "",
+                        ""
+                    ) {
+                        permissionRequest?.launch(writeStoragePermission)
+                    }
                 }
                 else -> permissionRequest?.launch(writeStoragePermission)
             }

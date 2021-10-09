@@ -2,11 +2,9 @@ package net.app.catsnetapp.ui.main
 
 import android.content.ContentResolver
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -31,6 +29,9 @@ class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel()
     private val _catsFlow = MutableStateFlow<List<Cat>>(emptyList())
     val catsFlow: StateFlow<List<Cat>> = _catsFlow
 
+    private val _catsFetching = MutableStateFlow(false)
+    val catsFetching: StateFlow<Boolean> get() = _catsFetching
+
     val saveStateEvent: LiveData<SaveImageState>
         get() = repository.saveState
 
@@ -46,7 +47,9 @@ class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel()
 
     fun fetchCatsImages() {
         viewModelScope.launch {
+            _catsFetching.tryEmit(true)
             repository.fetchCatsImages().apply {
+                _catsFetching.tryEmit(false)
                 when (this) {
                     is Success -> {
                         data?.let { cats ->
@@ -57,7 +60,6 @@ class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel()
                         }
                     }
                     is Failure -> {
-
                     }
                 }
             }

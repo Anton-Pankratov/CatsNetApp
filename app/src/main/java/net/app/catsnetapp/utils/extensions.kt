@@ -18,6 +18,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
@@ -34,17 +35,18 @@ fun Activity.configureSystemBars() {
             insetsController?.apply {
                 hide(
                     WindowInsets.Type.statusBars()
-                            or WindowInsets.Type.navigationBars()
+                        or WindowInsets.Type.navigationBars()
                 )
                 systemBarsBehavior =
                     WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
-            decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+            decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                )
         }
     }
-
 }
 
 fun View.startFlipAnimation() {
@@ -59,11 +61,17 @@ fun View.startFlipAnimation() {
     }.start()
 }
 
-fun View.startAlphaAnimation() {
+fun View.startAlphaAnimation(duration: Long) =
+    useAlphaAnimation(0.0f, 1.0f, duration)
+
+fun View.startAlphaAnimationReverse(duration: Long) =
+    useAlphaAnimation(1.0f, 0.0f, duration)
+
+private fun View.useAlphaAnimation(start: Float, end: Float, time: Long) {
     startAnimation(
-        AlphaAnimation(0.0f, 1.0f).apply {
-            duration = 1000
-            startOffset = 1000
+        AlphaAnimation(start, end).apply {
+            duration = time
+            startOffset = time
             fillAfter = true
         }
     )
@@ -91,6 +99,16 @@ fun Context.showPermissionRequestDialog(
     }.create().show()
 }
 
+fun Context.createProgressDialog(glide: RequestManager): ImageView {
+    return ImageView(this@createProgressDialog).apply {
+        scaleX = 0.5f
+        scaleY = 0.5f
+        glide
+            .load("file:///android_asset/progress_cat.gif")
+            .into(this)
+    }
+}
+
 suspend fun getCatImage(
     url: String?,
     glide: RequestManager
@@ -101,7 +119,6 @@ suspend fun getCatImage(
 }
 
 fun ImageView.setImage(url: String?, ext: String?, glide: RequestManager) {
-
     run {
         glide.apply {
             if (ext != "gif") {
@@ -140,13 +157,16 @@ fun ImageView.setDownloadIcon(
 
 private fun ImageView.getImage(url: String?, glide: RequestManager) {
     glide.apply {
-        (asBitmap()
-            .load(url)
-            .apply(createGlideRequestOptions())
-            .submit()
-            .get()).apply {
-                setIconByCheck(isNearBlack())
-            }
+        (
+            asBitmap()
+                .load(url)
+                .apply(createGlideRequestOptions())
+                .transition(BitmapTransitionOptions.withCrossFade(ANIM_DURATION_CROSS_FADE))
+                .submit()
+                .get()
+            ).apply {
+            setIconByCheck(isNearBlack())
+        }
     }
 }
 
@@ -154,10 +174,11 @@ fun ImageView.setIconByCheck(isNearBlack: Boolean) {
     setImageBitmap(
         ContextCompat.getDrawable(
             context,
-            if (isNearBlack)
+            if (isNearBlack) {
                 R.drawable.ic_download_light
-            else
+            } else {
                 R.drawable.ic_download_dark
+            }
         )?.toBitmap()
     )
 }
@@ -177,4 +198,3 @@ fun Bitmap.isNearBlack(): Boolean {
 fun createGlideRequestOptions(): RequestOptions {
     return RequestOptions().transform(CenterCrop(), RoundedCorners(16))
 }
-

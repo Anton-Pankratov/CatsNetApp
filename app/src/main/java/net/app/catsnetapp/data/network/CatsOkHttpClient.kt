@@ -4,7 +4,6 @@ import net.app.catsnetapp.utils.API_KEY
 import net.app.catsnetapp.utils.CONNECT_TIME
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 

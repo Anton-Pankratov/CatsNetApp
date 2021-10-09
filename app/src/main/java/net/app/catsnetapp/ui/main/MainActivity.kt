@@ -5,15 +5,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.app.catsnetapp.databinding.ActivityMainBinding
-import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.ui.cat.CatFragment
 import net.app.catsnetapp.ui.main.view.CatsView
-import net.app.catsnetapp.utils.configureSystemBars
-import net.app.catsnetapp.utils.getCatImage
+import net.app.catsnetapp.utils.*
 import net.app.catsnetapp.utils.permission.StorageAccessPermission
-import net.app.catsnetapp.utils.toast
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -29,16 +27,16 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding
 
+    private val progressDialog by lazy {
+        createProgressDialog(viewModel.glide)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setOnDeniedPermission()
         _binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding?.root?.apply {
-            listenOnCatViewClickEvents()
-            lifecycleScope.collectCats(viewModel.catsFlow)
-            addPagination()
-            collectSaveStateEvent()
-        })
+        setContentView(binding?.root)
+        binding?.catsView?.configure()
     }
 
     override fun onResume() {
@@ -56,27 +54,28 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        super.onRequestPermissionsResult(
+            requestCode,
+            permissions,
+            grantResults
+        )
+    }
+
+    private fun CatsView.configure() {
+        listenOnCatViewClickEvents()
+        lifecycleScope.collectCats(viewModel.catsFlow)
+        addPagination()
+        collectSaveStateEvent()
+        collectProgressState()
     }
 
     private fun CatsView.listenOnCatViewClickEvents() {
         setCatClickEventListener {
             viewModel.keepSelectedCat(it)
             CatFragment.create().show(
-                supportFragmentManager, "cat"
+                supportFragmentManager,
+                "cat"
             )
-        }
-    }
-
-    private fun collectSaveStateEvent() {
-        lifecycleScope.launch {
-            viewModel.saveStateEvent.observe(this@MainActivity) {
-                it.message.apply {
-                    if (this != null) {
-                        toast(this)
-                    }
-                }
-            }
         }
     }
 
@@ -99,13 +98,60 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun collectSaveStateEvent() {
+        lifecycleScope.launch {
+            viewModel.saveStateEvent.observe(
+                this@MainActivity
+            ) {
+                it.message.apply {
+                    if (this != null) {
+                        toast(this)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun collectProgressState() {
+        lifecycleScope.launch {
+            viewModel.catsFetching.collect { isFetching ->
+                useProgressViewWithCheck(isFetching)
+            }
+        }
+    }
+
+    private fun useProgressViewWithCheck(isFetching: Boolean) {
+        with(binding?.root) {
+            progressDialog.apply {
+                if (isFetching) {
+                    this@with?.addView(
+                        apply {
+                            startAlphaAnimation(
+                                ANIM_DURATION_PROGRESS
+                            )
+                        }
+                    )
+                } else {
+                    this@with?.removeView(
+                        apply {
+                            startAlphaAnimationReverse(
+                                ANIM_DURATION_PROGRESS
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+
     private fun setOnDeniedPermission() {
         viewModel.keptCat?.apply {
             permission.setPermissionCallback {
                 lifecycleScope.launch {
                     viewModel.apply {
                         viewModel.saveCatImage(
-                            contentResolver, formStoredCat()
+                            contentResolver,
+                            formStoredCat()
                         )
                     }
                 }

@@ -3,12 +3,14 @@ package net.app.catsnetapp.ui.list
 import android.content.Context
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.app.catsnetapp.R
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.utils.*
 import org.koin.core.component.KoinComponent
@@ -16,11 +18,19 @@ import org.koin.core.component.KoinComponent
 class CatViewHolder(private val catView: ImageView) :
     RecyclerView.ViewHolder(catView), KoinComponent {
 
+    private val placeholder = ContextCompat.getDrawable(
+        catView.context,
+        R.drawable.ic_cat_placeholder
+    )
+
     var cat: Cat? = null
         private set
 
+    private var isSet = false
+
     suspend fun onBind(
-        cat: Cat, listener: OnCatItemViewClickListener?,
+        cat: Cat,
+        listener: OnCatItemViewClickListener?,
         glide: RequestManager
     ) {
         this.cat = cat
@@ -43,9 +53,11 @@ class CatViewHolder(private val catView: ImageView) :
         listener: OnCatItemViewClickListener?
     ) {
         setOnClickListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                cat?.let {
-                    listener?.onClick(it)
+            if (drawable != placeholder) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    cat?.let {
+                        listener?.onClick(it)
+                    }
                 }
             }
         }
