@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker
 import net.app.catsnetapp.BuildConfig
 import net.app.catsnetapp.data.network.CatsOkHttpClient
 import net.app.catsnetapp.data.network.CatsRetrofitService
@@ -35,6 +36,7 @@ val appModule = module {
     factory { CatsOkHttpClient(get(named(API_KEY))).build() }
     factory { CatsRetrofitService(get(named(BASE_URL)), get(), get()).build() }
     single { ErrorsHandler }
+    single { InternetAvailabilityChecker.getInstance() }
 
     // Repository
     factory { CatsNetRepository(get(), get()) }

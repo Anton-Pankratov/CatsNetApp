@@ -16,6 +16,7 @@ import net.app.catsnetapp.models.StoredCatImage
 import net.app.catsnetapp.repository.CatsNetRepository
 import net.app.catsnetapp.ui.base.BaseViewModel
 import net.app.catsnetapp.ui.list.CatsDiffCallback
+import net.app.catsnetapp.utils.FETCH_INIT_COUNT
 import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 
@@ -36,19 +37,20 @@ class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel()
         get() = repository.saveState
 
     private val savedCats = mutableListOf<Cat>()
+    val catsIsExist get() = savedCats.isNotEmpty()
 
     init {
-        fetchCatsImages()
+        fetchCatsImages(FETCH_INIT_COUNT)
     }
 
     fun saveCatImage(contentResolver: ContentResolver?, image: StoredCatImage) {
         repository.saveCatImageInGallery(contentResolver, image)
     }
 
-    fun fetchCatsImages() {
+    fun fetchCatsImages(count: Int) {
         viewModelScope.launch {
             _catsFetching.tryEmit(true)
-            repository.fetchCatsImages().apply {
+            repository.fetchCatsImages(count).apply {
                 _catsFetching.tryEmit(false)
                 when (this) {
                     is Success -> {
@@ -59,8 +61,7 @@ class MainViewModel(private val repository: CatsNetRepository) : BaseViewModel()
                             }
                         }
                     }
-                    is Failure -> {
-                    }
+                    is Failure -> {}
                 }
             }
         }

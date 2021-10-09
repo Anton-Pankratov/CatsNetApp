@@ -33,18 +33,12 @@ fun Activity.configureSystemBars() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             setDecorFitsSystemWindows(false)
             insetsController?.apply {
-                hide(
-                    WindowInsets.Type.statusBars()
-                        or WindowInsets.Type.navigationBars()
-                )
+                hide(WindowInsets.Type.statusBars())
                 systemBarsBehavior =
                     WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         } else {
-            decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                )
+            decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
     }
 }

@@ -1,12 +1,20 @@
 package net.app.catsnetapp.ui.main
 
+import android.graphics.Color
 import android.os.Bundle
+import android.widget.Button
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker
+import com.treebo.internetavailabilitychecker.InternetConnectivityListener
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import net.app.catsnetapp.R
 import net.app.catsnetapp.databinding.ActivityMainBinding
 import net.app.catsnetapp.ui.cat.CatFragment
 import net.app.catsnetapp.ui.main.view.CatsView
@@ -16,19 +24,30 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), InternetConnectivityListener {
 
     private val viewModel: MainViewModel by viewModel()
 
     private val permission: StorageAccessPermission by inject {
         parametersOf(this)
     }
+    private val internetChecker: InternetAvailabilityChecker by inject()
 
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding
 
     private val progressDialog by lazy {
         createProgressDialog(viewModel.glide)
+    }
+
+    private val snackbar by lazy {
+        binding?.root?.let { view ->
+            Snackbar.make(
+                view, getString(
+                    R.string.check_internet_connection
+                ), Snackbar.LENGTH_INDEFINITE
+            )
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +60,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        INTERNET_CHECKER_ADD.invoke()
         configureSystemBars()
+    }
+
+    override fun onPause() {
+        INTERNET_CHECKER_REMOVE.invoke()
+        super.onPause()
     }
 
     override fun onDestroy() {
@@ -49,16 +74,19 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(
-            requestCode,
-            permissions,
-            grantResults
-        )
+    override fun onInternetConnectivityChanged(isConnected: Boolean) {
+        if (!isConnected) {
+            snackbar?.show()
+        } else {
+            snackbar?.dismiss()
+            checkForRefresh()
+        }
+    }
+
+    private fun checkForRefresh() {
+        viewModel.apply {
+            if (!catsIsExist) fetchCatsImages(FETCH_REFRESH_COUNT)
+        }
     }
 
     private fun CatsView.configure() {
@@ -89,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                                 (this as GridLayoutManager).findFirstVisibleItemPosition()
 
                             if ((childCount + pastVisibleItems) >= itemCount) {
-                                viewModel.fetchCatsImages()
+                                viewModel.fetchCatsImages(FETCH_REFRESH_COUNT)
                             }
                         }
                     }
@@ -155,6 +183,21 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private operator fun String.invoke() {
+        internetChecker.apply {
+            when (this@invoke) {
+                INTERNET_CHECKER_ADD ->
+                    addInternetConnectivityListener(
+                        this@MainActivity
+                    )
+                INTERNET_CHECKER_REMOVE ->
+                    removeInternetConnectivityChangeListener(
+                        this@MainActivity
+                    )
             }
         }
     }

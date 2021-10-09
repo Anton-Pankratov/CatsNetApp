@@ -24,10 +24,10 @@ class CatsNetRepository(
 
     private val errorsHandler: ErrorsHandler by inject()
 
-    suspend fun fetchCatsImages(): ApiResponse<List<Cat>?, String?> {
+    suspend fun fetchCatsImages(counts: Int): ApiResponse<List<Cat>?, String?> {
         return withContext(Dispatchers.IO) {
             try {
-                Success(apiService.fetchCatsImages("full", 30).body())
+                Success(apiService.fetchCatsImages("full", counts).body())
             } catch (e: Exception) {
                 errorsHandler.handle(e)
             }

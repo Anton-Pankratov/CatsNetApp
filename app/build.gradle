@@ -11,12 +11,10 @@ android {
 
     defaultConfig {
         applicationId "net.app.catsnetapp"
-        minSdk 16
+        minSdk 21
         targetSdk 30
         versionCode 1
         versionName "1.0"
-
-        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -131,6 +129,21 @@ detekt {
     }
 }
 
+tasks.register('printLintersProperties') {
+    doLast {
+        println ktlint
+        println detekt
+    }
+}
+
+tasks.register('drawablesHashcodes') {
+    doLast {
+        file('src/main/res/drawable').listFiles().each { File file ->
+            println "$file.name -> hashCode is ${file.hashCode()}"
+        }
+    }
+}
+
 dependencies {
 
     /** Android API Extension */
@@ -168,6 +181,8 @@ dependencies {
     /** Parser */
     implementation "com.squareup.moshi:moshi-kotlin:$moshi"
     implementation "com.squareup.moshi:moshi-adapters:$moshi"
+
+    implementation "com.treebo:internetavailabilitychecker:1.0.4"
 
     /** Testing */
     testImplementation "junit:junit:$junit"
