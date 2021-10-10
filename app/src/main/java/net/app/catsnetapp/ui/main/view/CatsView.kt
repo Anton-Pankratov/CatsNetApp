@@ -2,30 +2,31 @@ package net.app.catsnetapp.ui.main.view
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MotionEvent
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import coil.ImageLoader
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.ui.list.CatsAdapter
-import net.app.catsnetapp.ui.list.CatsDiffCallback
-import net.app.catsnetapp.utils.DI_COIL_IMAGE_LOADER
+import net.app.catsnetapp.ui.main.MainViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 
 class CatsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
     RecyclerView(context, attrs), KoinComponent {
 
-    private val diffCallback: CatsDiffCallback by inject()
-    private val imageLoader: ImageLoader by inject(named(DI_COIL_IMAGE_LOADER))
+    private val viewModel: MainViewModel by inject()
 
     private var onCatViewCatEvent: CatsViewClickEvent? = null
 
     private val catsAdapter: CatsAdapter by lazy {
-        CatsAdapter(diffCallback, imageLoader).apply {
+        CatsAdapter(
+            viewModel.diffCallback,
+            viewModel.glide
+        ).apply {
             setOnCatClickListener { url ->
                 onCatViewCatEvent?.onCatClick(url)
             }
@@ -41,9 +42,11 @@ class CatsView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         onCatViewCatEvent = listener
     }
 
-    fun LifecycleOwner.observeCats(cats: LiveData<List<Cat>>) {
-        cats.observe(this) {
-            catsAdapter.submitList(it)
+    fun CoroutineScope.collectCats(cats: StateFlow<List<Cat>>) {
+        launch {
+            cats.collect {
+                catsAdapter.submitList(it)
+            }
         }
     }
 }

@@ -1,7 +1,15 @@
-<net.app.catsnetapp.ui.main.view.CatsView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@color/amber_300"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp" />
+    android:background="@color/amber_300">
+
+    <net.app.catsnetapp.ui.main.view.CatsView
+        android:id="@+id/cats_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/amber_300"
+        android:fitsSystemWindows="true"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:scrollbars="vertical" />
+</FrameLayout>

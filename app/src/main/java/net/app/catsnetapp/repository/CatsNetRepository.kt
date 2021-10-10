@@ -1,8 +1,8 @@
 package net.app.catsnetapp.repository
 
 import android.content.ContentResolver
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import net.app.catsnetapp.data.network.ApiResponse
 import net.app.catsnetapp.data.network.CatsApiService
@@ -19,22 +19,25 @@ class CatsNetRepository(
     private val inGallerySaver: CatImageSaver
 ) : KoinComponent {
 
-    val saveState: StateFlow<SaveImageState>
+    val saveState: LiveData<SaveImageState>
         get() = inGallerySaver.saveImageState
 
     private val errorsHandler: ErrorsHandler by inject()
 
-    suspend fun fetchCatsImages(): ApiResponse<List<Cat>?, String?> {
+    suspend fun fetchCatsImages(counts: Int): ApiResponse<List<Cat>?, String?> {
         return withContext(Dispatchers.IO) {
             try {
-                Success(apiService.fetchCatsImages("full", 10).body())
+                Success(apiService.fetchCatsImages("full", counts).body())
             } catch (e: Exception) {
                 errorsHandler.handle(e)
             }
         }
     }
 
-    fun saveCatImageInGallery(contentResolver: ContentResolver?, image: StoredCatImage) {
+    fun saveCatImageInGallery(
+        contentResolver: ContentResolver?,
+        image: StoredCatImage
+    ) {
         inGallerySaver.saveCatImageInGallery(contentResolver, image)
     }
 }

@@ -3,40 +3,61 @@ package net.app.catsnetapp.ui.list
 import android.content.Context
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import coil.ImageLoader
+import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import net.app.catsnetapp.R
 import net.app.catsnetapp.models.Cat
 import net.app.catsnetapp.utils.*
 import org.koin.core.component.KoinComponent
 
-class CatViewHolder(private val catView: AppCompatImageView) :
+class CatViewHolder(private val catView: ImageView) :
     RecyclerView.ViewHolder(catView), KoinComponent {
+
+    private val placeholder = ContextCompat.getDrawable(
+        catView.context,
+        R.drawable.ic_cat_placeholder
+    )
 
     var cat: Cat? = null
         private set
 
-    fun onBind(
-        cat: Cat, listener: OnCatItemViewClickListener?,
-        imageLoader: ImageLoader
+    private var isSet = false
+
+    suspend fun onBind(
+        cat: Cat,
+        listener: OnCatItemViewClickListener?,
+        glide: RequestManager
     ) {
         this.cat = cat
-        catView.setCatImage(listener, imageLoader)
+        catView.apply {
+            setCatImage(listener, glide)
+        }
     }
 
-    private fun ImageView.setCatImage(
+    private suspend fun ImageView.setCatImage(
         listener: OnCatItemViewClickListener?,
-        imageLoader: ImageLoader
+        glide: RequestManager
     ) {
+        withContext(Dispatchers.Main) {
+            setImage(cat?.url, cat?.ext, glide)
+            setOnCatClickListener(listener)
+        }
+    }
 
-        setImage(cat?.url, imageLoader)
-
+    private fun ImageView.setOnCatClickListener(
+        listener: OnCatItemViewClickListener?
+    ) {
         setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                cat?.let {
-                    listener?.onClick(it)
+            if (drawable != placeholder) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    cat?.let {
+                        listener?.onClick(it)
+                    }
                 }
             }
         }
@@ -53,7 +74,7 @@ class CatViewHolder(private val catView: AppCompatImageView) :
             }
         }
 
-        private fun AppCompatImageView.setViewParams() {
+        private fun ImageView.setViewParams() {
             layoutParams = RecyclerView.LayoutParams(
                 RecyclerView.LayoutParams.MATCH_PARENT,
                 context.toDp(IMAGE_SIZE)

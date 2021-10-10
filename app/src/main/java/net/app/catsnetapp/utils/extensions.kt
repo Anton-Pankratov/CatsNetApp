@@ -4,12 +4,9 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -20,33 +17,29 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import coil.ImageLoader
-import coil.request.ImageRequest
-import coil.transform.RoundedCornersTransformation
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
+import kotlinx.coroutines.*
 import net.app.catsnetapp.R
-import net.app.catsnetapp.models.Cat
 import kotlin.math.roundToInt
 import android.animation.PropertyValuesHolder as PropHolder
 
 @SuppressLint("InlinedApi")
 fun Activity.configureSystemBars() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        window.setDecorFitsSystemWindows(false)
-        if (window.insetsController != null) {
-            window.insetsController!!.hide(
-                WindowInsets.Type.statusBars()
-                        or WindowInsets.Type.navigationBars()
-            )
-            window.insetsController!!.systemBarsBehavior =
-                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    with(window) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            setDecorFitsSystemWindows(false)
+            insetsController?.apply {
+                hide(WindowInsets.Type.statusBars())
+                systemBarsBehavior =
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         }
-    } else {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
     }
 }
 
@@ -62,11 +55,17 @@ fun View.startFlipAnimation() {
     }.start()
 }
 
-fun View.startAlphaAnimation() {
+fun View.startAlphaAnimation(duration: Long) =
+    useAlphaAnimation(0.0f, 1.0f, duration)
+
+fun View.startAlphaAnimationReverse(duration: Long) =
+    useAlphaAnimation(1.0f, 0.0f, duration)
+
+private fun View.useAlphaAnimation(start: Float, end: Float, time: Long) {
     startAnimation(
-        AlphaAnimation(0.0f, 1.0f).apply {
-            duration = 1000
-            startOffset = 1000
+        AlphaAnimation(start, end).apply {
+            duration = time
+            startOffset = time
             fillAfter = true
         }
     )
@@ -76,66 +75,104 @@ fun Context.toDp(value: Int): Int {
     return (value * resources.displayMetrics.density + 0.5f).roundToInt()
 }
 
-fun Context.getCatImage(
-    url: String?,
-    imageLoader: ImageLoader
-): Bitmap? {
-    var catImage: Bitmap? = null
-    imageLoader.enqueue(
-        ImageRequest.Builder(this).apply {
-            data(url)
-            crossfade(true)
-            transformations(RoundedCornersTransformation(CORNERS_SIZE))
-            target { image ->
-                catImage = (image as BitmapDrawable).bitmap
-            }
-        }.build()
-    )
-    return catImage
-}
-
 fun Context.toast(@StringRes message: Int) {
     Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show()
 }
 
-fun ImageView.setImage(url: String?, imageLoader: ImageLoader) {
-    imageLoader.enqueue(
-        ImageRequest.Builder(context)
-            .data(url)
-            .crossfade(true)
-            .transformations(RoundedCornersTransformation(CORNERS_SIZE))
-            .target(this@setImage)
-            .build()
-    )
+fun Context.showPermissionRequestDialog(
+    title: String,
+    body: String,
+    callback: () -> Unit
+) {
+    AlertDialog.Builder(this).also {
+        it.setTitle(title)
+        it.setMessage(body)
+        it.setPositiveButton("Ok") { _, _ ->
+            callback()
+        }
+    }.create().show()
+}
+
+fun Context.createProgressDialog(glide: RequestManager): ImageView {
+    return ImageView(this@createProgressDialog).apply {
+        scaleX = 0.5f
+        scaleY = 0.5f
+        glide
+            .load("file:///android_asset/progress_cat.gif")
+            .into(this)
+    }
+}
+
+suspend fun getCatImage(
+    url: String?,
+    glide: RequestManager
+): Bitmap? {
+    return withContext(Dispatchers.IO) {
+        glide.asBitmap().load(url).submit().get()
+    }
+}
+
+fun ImageView.setImage(url: String?, ext: String?, glide: RequestManager) {
+    run {
+        glide.apply {
+            if (ext != "gif") {
+                load(url)
+                    .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_cat_placeholder))
+                    .apply(createGlideRequestOptions())
+                    .into(this@setImage)
+            } else {
+                asGif().load(url)
+                    .placeholder(ContextCompat.getDrawable(context, R.drawable.ic_cat_placeholder))
+                    .apply(createGlideRequestOptions())
+                    .into(this@setImage)
+            }
+        }
+    }
 }
 
 fun ImageView.setDownloadIcon(
     url: String?,
-    target: ImageView,
-    imageLoader: ImageLoader
+    glide: RequestManager
 ) {
-    imageLoader.enqueue(
-        ImageRequest.Builder(context).apply {
-            data(url)
-            crossfade(true)
-            transformations(RoundedCornersTransformation(CORNERS_SIZE))
-            target { bitmap ->
-                (bitmap as BitmapDrawable).bitmap.apply {
-                    target.setIconByCheck(isNearBlack())
-                }
-            }
-        }.build()
-    )
+    var tries = 0
+    if (tries == 2) {
+        context.toast(R.string.save_image_exception)
+        return
+    }
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            getImage(url, glide)
+        } catch (e: Exception) {
+            tries++
+            setDownloadIcon(url, glide)
+        }
+    }
+}
+
+private fun ImageView.getImage(url: String?, glide: RequestManager) {
+    glide.apply {
+        (
+            asBitmap()
+                .load(url)
+                .apply(createGlideRequestOptions())
+                .transition(BitmapTransitionOptions.withCrossFade(ANIM_DURATION_CROSS_FADE))
+                .submit()
+                .get()
+            ).apply {
+            setIconByCheck(isNearBlack())
+        }
+    }
 }
 
 fun ImageView.setIconByCheck(isNearBlack: Boolean) {
     setImageBitmap(
         ContextCompat.getDrawable(
             context,
-            if (isNearBlack)
+            if (isNearBlack) {
                 R.drawable.ic_download_light
-            else
+            } else {
                 R.drawable.ic_download_dark
+            }
         )?.toBitmap()
     )
 }
@@ -150,4 +187,8 @@ fun Bitmap.isNearBlack(): Boolean {
             return any { it <= 215 }
         }
     }
+}
+
+fun createGlideRequestOptions(): RequestOptions {
+    return RequestOptions().transform(CenterCrop(), RoundedCorners(16))
 }

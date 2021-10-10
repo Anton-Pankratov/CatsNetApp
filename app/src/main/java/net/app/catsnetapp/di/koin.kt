@@ -1,10 +1,11 @@
 package net.app.catsnetapp.di
 
 import android.content.Context
-import coil.ImageLoader
-import coil.util.CoilUtils
+import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.treebo.internetavailabilitychecker.InternetAvailabilityChecker
 import net.app.catsnetapp.BuildConfig
 import net.app.catsnetapp.data.network.CatsOkHttpClient
 import net.app.catsnetapp.data.network.CatsRetrofitService
@@ -15,11 +16,10 @@ import net.app.catsnetapp.repository.ErrorsHandler
 import net.app.catsnetapp.ui.cat.CatViewModel
 import net.app.catsnetapp.ui.list.CatsDiffCallback
 import net.app.catsnetapp.ui.main.MainViewModel
-import net.app.catsnetapp.utils.API_KEY
-import net.app.catsnetapp.utils.BASE_URL
-import net.app.catsnetapp.utils.DI_COIL_IMAGE_LOADER
-import net.app.catsnetapp.utils.DI_CONTEXT
-import okhttp3.OkHttpClient
+import net.app.catsnetapp.utils.*
+import net.app.catsnetapp.utils.permission.StorageAccessPermission
+import net.app.catsnetapp.utils.permission.StorageAccessPermissionImpl
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -36,6 +36,7 @@ val appModule = module {
     factory { CatsOkHttpClient(get(named(API_KEY))).build() }
     factory { CatsRetrofitService(get(named(BASE_URL)), get(), get()).build() }
     single { ErrorsHandler }
+    single { InternetAvailabilityChecker.getInstance() }
 
     // Repository
     factory { CatsNetRepository(get(), get()) }
@@ -46,17 +47,13 @@ val appModule = module {
 
     single { CatsDiffCallback() }
 
-    single(named(DI_COIL_IMAGE_LOADER)) {
-        ImageLoader.Builder(get(named(DI_CONTEXT)))
-            .crossfade(true)
-            .okHttpClient {
-                OkHttpClient.Builder()
-                    .cache(CoilUtils.createDefaultCache(get(named(DI_CONTEXT))))
-                    .build()
-            }.build()
-    }
+    single(named(DI_GLIDE)) { Glide.with(androidContext()) }
 
     // Storage
+
+    single<StorageAccessPermission> { (activity: AppCompatActivity) ->
+        StorageAccessPermissionImpl(activity)
+    }
 
     single<CatImageSaver> { CatImageSaverImpl() }
 }

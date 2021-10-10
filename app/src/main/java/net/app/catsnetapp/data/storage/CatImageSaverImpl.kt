@@ -7,8 +7,8 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import net.app.catsnetapp.models.StoredCatImage
 import java.io.File
 import java.io.FileOutputStream
@@ -17,9 +17,9 @@ import android.provider.MediaStore.MediaColumns as Column
 
 class CatImageSaverImpl : CatImageSaver {
 
-    private val _saveImageState = MutableStateFlow(SaveImageState.NONE)
+    private val _saveImageState = MutableLiveData(SaveImageState.NONE)
 
-    override val saveImageState: StateFlow<SaveImageState>
+    override val saveImageState: LiveData<SaveImageState>
         get() = _saveImageState
 
     override fun saveCatImageInGallery(
@@ -35,15 +35,17 @@ class CatImageSaverImpl : CatImageSaver {
                     saveForApi29Less()
                 }
                 stream.use {
+                    if (ext == "gif") {
+                    }
                     bitmap?.compress(
-                        Bitmap.CompressFormat.JPEG, 100, it
+                        Bitmap.CompressFormat.JPEG,
+                        100,
+                        it
                     )
-                    _saveImageState.tryEmit(SaveImageState.SUCCESS)
+                    _saveImageState.postValue(SaveImageState.SUCCESS)
                 }
             } catch (e: Exception) {
-                _saveImageState.tryEmit(SaveImageState.FAILURE)
-            } finally {
-                stream?.close()
+                _saveImageState.postValue(SaveImageState.FAILURE)
             }
         }
     }
@@ -53,7 +55,8 @@ class CatImageSaverImpl : CatImageSaver {
         contentResolver: ContentResolver?
     ): OutputStream? {
         return contentResolver?.let {
-            it.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            it.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 ContentValues().apply {
                     put(Column.DISPLAY_NAME, "$name$ext")
                     put(Column.MIME_TYPE, "image/$ext")
